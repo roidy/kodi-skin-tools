@@ -1,0 +1,85 @@
+{
+  "name": "kodi-skin-tools",
+  "displayName": "Kodi Skin Tools",
+  "description": "A set of tools and helpers for the development of Kodi skins.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "icon": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/roidy/kodi-skin-tools.git"
+  },
+  "homepage": "https://github.com/roidy/kodi-skin-tools/blob/master/README.md",
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "kodi-skin-tools.Localize",
+        "title": "Kodi: Localize"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "kodi-skin-tools.Localize",
+          "group": "1_kodi-skin-tools",
+          "when": "resourceExtname == .xml"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Kodi Skin Tools",
+      "properties": {
+        "kodi-skin-tools.decoratorColor": {
+          "type": "string",
+          "format": "color-hex",
+          "default": "#ffffff60",
+          "description": "Decoration color #rrggbbaa"
+        },
+        "kodi-skin-tools.operation": {
+          "type": "string",
+          "default": "ID",
+          "enum": [
+            "ID",
+            "$LOCALIZE[ID]"
+          ],
+          "description": "Default localization type (ID or $LOCALIZE[ID])"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.7",
+    "@types/n-readlines": "^1.0.6",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.98.0",
+    "@typescript-eslint/eslint-plugin": "^7.14.1",
+    "@typescript-eslint/parser": "^7.11.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.4.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "line-reader": "^0.4.0",
+    "n-readlines": "^1.0.1",
+    "node-fetch": "^3.3.2",
+    "pofile": "^1.1.4",
+    "request": "^2.88.2"
+  }
+}
