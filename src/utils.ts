@@ -4,20 +4,26 @@ import lineReader = require('n-readlines');
 import path = require('path');
 
 /**
- * Retrieves the word at the current cursor position in the active text editor.
+ * Retrieves the word at the current cursor position or selectionin the active text editor.
  *
- * @returns {string | undefined} The word at the cursor position, or `undefined` if there is no active editor.
+ * @returns {string | undefined} The word at the cursor position, or `undefined` if there is no active editor or word.
  */
-export function getWord(): string | undefined {
+export function getWord(): any[] {
     const editor = vscode.window.activeTextEditor;
-    if (!editor) { return undefined; }
+    if (!editor) { return [undefined, undefined]; }
 
     const position = editor.selection.active;
+    // Check to see is position is a space and could not possibly return a word.
+    const currentChar = editor.document.getText(new vscode.Range(position, position.translate(0, 1)));
+    if (currentChar.trim() === "") {
+        return [undefined, undefined];
+    }
+
     const wordRange = editor.selection.isEmpty
-        ? editor.document.getWordRangeAtPosition(position)
+        ? editor!.document.getWordRangeAtPosition(position)
         : editor.selection;
 
-    return editor.document.getText(wordRange);
+    return [editor.document.getText(wordRange),  new vscode.Selection(wordRange!.start, wordRange!.end)];
 }
 
 /**

@@ -1,26 +1,34 @@
 import * as vscode from 'vscode';
+import { logger, LogLevel } from './logging';
 import { config } from './configuration';
-import { logger } from './logging';
-import { po } from './po-file';
+import { localize } from './localize';
 
-
+/**
+ * Activate the Kodi Skin Tools extension.
+ */
 export function activate(context: vscode.ExtensionContext) {
+    logger.log('Kodi Skin Tools is active.', LogLevel.Info);
 
-    const disposable = vscode.commands.registerCommand('kodi-skin-tools.Localize', () => {
+    /**
+     *  Register all commands.
+     */
+    context.subscriptions.push(
+        vscode.commands.registerCommand('kodi-skin-tools.Localize', () => {
+            localize.run();
+        })
+    );
 
-        logger.log(po.getString(31000));
-        
-        vscode.window.showInformationMessage('Hello World from Kodi Skin Tools!');
-    });
-
-    context.subscriptions.push(disposable);
-
+    /**
+     * Register all events.
+     */
     vscode.workspace.onDidChangeConfiguration(() => {
         config.loadConfig();
-        logger.log('Kodi Skin Tools - config changed');
-        logger.log(`Decorator Color: ${config.decoratorColor}`);
     });
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() { }
+/**
+ * Deactivate the Kodi Skin Tools extension.
+ */
+export function deactivate() {
+    logger.log('Kodi Skin Tools deactivated.', LogLevel.Info);
+}

@@ -2,41 +2,59 @@ import * as vscode from 'vscode';
 import PO from "pofile";
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import path from 'path';
-import { logger } from './logging';
+import { logger, LogLevel } from './logging';
 import { config } from './configuration';
 
+/**
+ * The POFiles class is responsible for handling the loading, saving, and manipulation of PO (Portable Object) files.
+ */
 class POFiles {
     public skinPO: PO | undefined;
     public kodiPO: PO | undefined;
 
+    /**
+     * Initializes a new instance of the POFiles class and loads the skin and Kodi PO files.
+     */
     constructor() {
-        this.skinPO = this.loadSkinPO();
-        this.loadKodiPO().then(po => this.kodiPO = po);
+        this.loadSkinPO();
+        this.loadKodiPO();
     }
 
-    async loadKodiPO(): Promise<PO | undefined> {
+    /**
+     * Loads the Kodi PO file from a remote URL.
+     */
+    async loadKodiPO() {
         const response = await fetch('https://raw.githubusercontent.com/xbmc/xbmc/master/addons/resource.language.en_gb/resources/strings.po');
         if (response.status !== 200) {
-            return undefined;
+            logger.log('Unable to fetch Kodi po file from GitHub.', LogLevel.Error);
+            this.kodiPO = undefined;
+            return;
         }
         const body = await response.text();
         const po = PO.parse(body);
-        return this.skinPO;
+        this.kodiPO = po;
     }
-
-    loadSkinPO(): PO | undefined {
+    /**
+     * Loads the skin PO file from the local file system workspace.
+     */
+    async loadSkinPO() {
         let editor = vscode.window.activeTextEditor;
         if (editor?.document.uri) {
             const folder = vscode.workspace.getWorkspaceFolder(editor!.document.uri);
             const poFile = folder!.uri.fsPath + `${path.sep}language${path.sep}resource.language.en_gb${path.sep}strings.po`;
             const data = readFileSync(poFile, 'utf-8');
             const po = PO.parse(data);
-            return po;
+            this.skinPO = po;
+            return;
         }
-        return undefined;
+        logger.log('Failed to load skin po.', LogLevel.Error);
+        this.skinPO = undefined;
+        return;
     }
-
-    writeSkinPO(skinPO: PO | undefined) {
+    /**
+     * Writes the current state of the skin PO file to the local file system, creating a backup of the existing file.
+     */
+    writeSkinPO() {
         const editor = vscode.window.activeTextEditor;
         if (editor && editor.document.uri) {
             const folder = vscode.workspace.getWorkspaceFolder(editor!.document.uri);
@@ -61,21 +79,35 @@ class POFiles {
         }
     }
 
+    /**
+     * Retrieves a string from the PO files by its ID.
+     * @param {number} id - The ID of the string to retrieve.
+     * @returns {string} The string corresponding to the given ID, or an empty string if not found.
+     */
     getString(id: number): string {
         const stringId = `#${id}`;
 
         // Check Skin strings
-        const skinString = this.skinPO?.items?.find(item => item.msgctxt === stringId)?.msgid;
-        if (skinString) { return skinString; }
+        if (this.skinPO) {
+            const skinString = this.skinPO.items?.find(item => item.msgctxt === stringId)?.msgid;
+            if (skinString) { return skinString; }
+        }
 
         // Check Kodi strings
-        const kodiString = this.kodiPO?.items?.find(item => item.msgctxt === stringId)?.msgid;
-        if (kodiString) { return kodiString; }
+        if (this.kodiPO) {
+            const kodiString = this.kodiPO.items?.find(item => item.msgctxt === stringId)?.msgid;
+            if (kodiString) { return kodiString; }
+        }
 
         return '';
     }
 
-    getID(word: String) {
+    /**
+     * Finds the ID of a given string in the PO files.
+     * @param {string} word - The word to find the ID for.
+     * @returns {string} The ID of the word, or an empty string if not found.
+     */
+    getID(word: String): string {
         // Find word in po
         let id: string | undefined;
         const skinID = this.skinPO?.items?.find((v) => v.msgid === word);
@@ -94,6 +126,10 @@ class POFiles {
         return '';
     }
 
+    /**
+     * Creates a new entry in the skin PO file with the given word.
+     * @param {string} word - The word to create a new entry for.
+     */
     createEntry(word: string) {
         let item;
         for (let i = 31000; i < 34000; i++) {
@@ -108,8 +144,6 @@ class POFiles {
                 if (this.skinPO && this.skinPO.items) {
                     newPO = this.skinPO.items.concat(newItem);
                     this.skinPO.items = newPO;
-                }
-                if (this.skinPO && this.skinPO.items) {
                     this.skinPO.items.sort((a, b) => {
                         if (a.msgctxt && b.msgctxt) {
                             return a.msgctxt > b.msgctxt ? 1 : -1;
@@ -117,11 +151,11 @@ class POFiles {
                         return 0;
                     });
                 }
-                this.writeSkinPO(this.skinPO);
+                this.writeSkinPO();
+                this.loadSkinPO();
                 break;
             }
         }
-        return po;
     }
 }
 
