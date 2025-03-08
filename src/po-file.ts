@@ -6,7 +6,7 @@ import { logger, LogLevel } from './logging';
 import { config } from './configuration';
 
 /**
- * The POFiles class is responsible for handling the loading, saving, and manipulation of PO (Portable Object) files.
+ * The POFiles class is responsible for handling the loading, saving, and manipulation of PO (GNU gettext) files.
  */
 class POFiles {
     public skinPO: PO | undefined;
@@ -132,28 +132,19 @@ class POFiles {
      */
     createEntry(word: string) {
         let item;
-        for (let i = 31000; i < 34000; i++) {
-            if (this.skinPO && this.skinPO.items) {
+        if (this.skinPO && this.skinPO.items) {
+            for (let i = 31000; i < 34000; i++) {
                 item = this.skinPO.items.find((v) => v.msgctxt === `#${i}`);
-            }
-            if (!item) {
-                var newItem = new PO.Item();
-                newItem.msgctxt = `#${i}`;
-                newItem.msgid = (word as string);
-                var newPO = this.skinPO && this.skinPO.items ? this.skinPO.items.concat(newItem) : [];
-                if (this.skinPO && this.skinPO.items) {
-                    newPO = this.skinPO.items.concat(newItem);
+                if (!item) {
+                    var newItem = new PO.Item();
+                    newItem.msgctxt = `#${i}`;
+                    newItem.msgid = (word as string);
+                    var newPO = this.skinPO.items.concat(newItem);
                     this.skinPO.items = newPO;
-                    this.skinPO.items.sort((a, b) => {
-                        if (a.msgctxt && b.msgctxt) {
-                            return a.msgctxt > b.msgctxt ? 1 : -1;
-                        }
-                        return 0;
-                    });
+                    this.skinPO.items.sort((a, b) => (a > b ? 1 : -1));
+                    this.writeSkinPO();
+                    break;
                 }
-                this.writeSkinPO();
-                this.loadSkinPO();
-                break;
             }
         }
     }

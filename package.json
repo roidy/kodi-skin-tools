@@ -53,6 +53,11 @@
             "$LOCALIZE[ID]"
           ],
           "description": "Default localization type (ID or $LOCALIZE[ID])"
+        },
+        "kodi-skin-tools.reloadExtensions": {
+          "type": "string",
+          "default": ".xml, .po",
+          "description": "Comma separated list of file extensions that will cause Kodi to reload the skin when saved."
         }
       }
     }

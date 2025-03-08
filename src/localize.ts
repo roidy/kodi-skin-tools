@@ -39,14 +39,16 @@ class Localize {
         const result = this.isNumber(selection);
         if (result) {
             // Selction was a number or just swapped, exit early
+            logger.log('Performed swap.');
             return;
         }
 
         // Check if the string exists in the po files
         const id = po.getID(word);
         if (id) {
+            logger.log(`String with id: ${id} exists in po.`);
             editor.edit(editBuilder => {
-                editBuilder.replace(selection, id!);
+                editBuilder.replace(selection, id);
             });
             return;
         }
@@ -55,13 +57,13 @@ class Localize {
         po.createEntry(word);
         const newId = po.getID(word);
         if (newId) {
+            logger.log(`Created new po entry with id: ${newId}.`);
             editor.edit(editBuilder => {
-                editBuilder.replace(selection, id!);
+                editBuilder.replace(selection, newId!);
             });
             return;
         }
     }
-
 
     private isNumber(selection: vscode.Selection) {
         const editor = vscode.window.activeTextEditor;
@@ -121,15 +123,6 @@ class Localize {
 
         return false;
     }
-
-
-
-
-
-
-
-
-
 }
 
 export const localize = new Localize();

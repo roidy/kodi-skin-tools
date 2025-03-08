@@ -2,6 +2,9 @@ import * as vscode from 'vscode';
 import fs = require('fs');
 import lineReader = require('n-readlines');
 import path = require('path');
+import { Buffer } from 'buffer';
+import { Socket } from 'net';
+import { logger, LogLevel } from './logging';
 
 /**
  * Retrieves the word at the current cursor position or selectionin the active text editor.
@@ -23,7 +26,7 @@ export function getWord(): any[] {
         ? editor!.document.getWordRangeAtPosition(position)
         : editor.selection;
 
-    return [editor.document.getText(wordRange),  new vscode.Selection(wordRange!.start, wordRange!.end)];
+    return [editor.document.getText(wordRange), new vscode.Selection(wordRange!.start, wordRange!.end)];
 }
 
 /**
@@ -37,7 +40,7 @@ export function getWord(): any[] {
  * @param excludeDir - A directory to exclude from the search. Defaults to `'backup'`.
  * @returns An array of `vscode.Location` objects representing the locations of the matches.
  */
-export function findWordInFiles(directory: string, targetWord: string, customMatcher?: string, findFirstMatch = false, ext = ['.xml','.po'], excludeDir = 'backup'): vscode.Location[] {
+export function findWordInFiles(directory: string, targetWord: string, customMatcher?: string, findFirstMatch = false, ext = ['.xml', '.po'], excludeDir = 'backup'): vscode.Location[] {
     if (!fs.existsSync(directory)) {
         return [];
     }
@@ -98,4 +101,45 @@ function getFilesInDirectory(dir: string, ext: string[], excludeDir: string): st
     });
 
     return files;
+}
+
+
+export async function reloadKodiSkin() {
+    // Kodi server details
+    const kodiHost = '192.168.0.85';
+    const kodiPort = 8080;
+    const username = 'kodi';
+    const password = 'kodi';
+
+    // Encode the username and password in base64
+    const credentials = `${username}:${password}`;
+    const encodedCredentials = Buffer.from(credentials).toString('base64');
+
+    // JSON-RPC request to send
+    const request = {
+        jsonrpc: '2.0',
+        method: 'Addons.ExecuteAddon',
+        params: { addonid: 'script.vscode.reload' },
+        id: 1
+    };
+
+    try {
+        const response = await fetch(`http://${kodiHost}:${kodiPort}/jsonrpc`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${encodedCredentials}`,
+                'Content-Length': Buffer.byteLength(JSON.stringify(request)).toString(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(request)
+        });
+
+        if (response.ok) {
+            logger.log('Addon.ExecuteAddon action sent to Kodi with authentication');
+        } else {
+            logger.log('Error:', LogLevel.Error);
+        }
+    } catch (err) {
+        logger.log('Error:', LogLevel.Error);
+    }
 }
