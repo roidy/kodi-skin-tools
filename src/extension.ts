@@ -5,6 +5,8 @@ import { localize } from './localize';
 import { decorator } from './decorator';
 import { po } from './po-file';
 import { reloadKodiSkin } from './utils';
+import { DefinitionProvider } from './definition';
+import { ReferenceProvider } from './reference';
 
 /**
  * Activate the Kodi Skin Tools extension.
@@ -12,10 +14,11 @@ import { reloadKodiSkin } from './utils';
 export function activate(context: vscode.ExtensionContext) {
     logger.log('Kodi Skin Tools is active.', LogLevel.Info);
 
+    // Force an initial decoration update.
     decorator.updateDecorations();
 
     /**
-     *  Register all commands.
+     * Register all commands.
      */
     context.subscriptions.push(
         vscode.commands.registerCommand('kodi-skin-tools.Localize', () => {
@@ -29,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidChangeConfiguration(() => {
         config.loadConfig();
     }, null, context.subscriptions);
-    
+
     vscode.window.onDidChangeActiveTextEditor(async editor => {
         if (editor) {
             decorator.activeEditor = editor;
@@ -44,12 +47,27 @@ export function activate(context: vscode.ExtensionContext) {
     }, null, context.subscriptions);
 
     vscode.workspace.onDidSaveTextDocument(document => {
+        // Saved document was a po file so reload it.
         if (document.uri.fsPath.endsWith('.po')) {
             po.loadSkinPO();
         }
+        // If document has a known extension the reload the Kodi skin.
         const hasExtension = config.reloadExtensions!.some(extension => document.uri.fsPath.endsWith(extension));
         if (hasExtension) { reloadKodiSkin(); }
-    });
+    }, null, context.subscriptions);
+
+    /**
+     * Register all providers
+     */
+    context.subscriptions.push(
+        vscode.languages.registerDefinitionProvider('xml',
+            new DefinitionProvider())
+    );
+
+    context.subscriptions.push(
+        vscode.languages.registerReferenceProvider('xml',
+            new ReferenceProvider())
+    );
 }
 
 

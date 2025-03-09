@@ -6,12 +6,17 @@ import { Buffer } from 'buffer';
 import { Socket } from 'net';
 import { logger, LogLevel } from './logging';
 
+
+
 /**
- * Retrieves the word at the current cursor position or selectionin the active text editor.
+ * Retrieves the word at the current cursor position in the active text editor.
+ * If the cursor is on a space, it returns `[undefined, undefined]`.
+ * Optionally converts the word to lowercase.
  *
- * @returns {string | undefined} The word at the cursor position, or `undefined` if there is no active editor or word.
+ * @param {boolean} [toLower=false] - Whether to convert the word to lowercase.
+ * @returns {[string | undefined, vscode.Selection | undefined]} - A tuple containing the word and its selection range.
  */
-export function getWord(): any[] {
+export function getWord(toLower: boolean = false): any[] {
     const editor = vscode.window.activeTextEditor;
     if (!editor) { return [undefined, undefined]; }
 
@@ -25,8 +30,10 @@ export function getWord(): any[] {
     const wordRange = editor.selection.isEmpty
         ? editor!.document.getWordRangeAtPosition(position)
         : editor.selection;
+    
+    const str = toLower ? editor.document.getText(wordRange).toLowerCase() : editor.document.getText(wordRange);
 
-    return [editor.document.getText(wordRange), new vscode.Selection(wordRange!.start, wordRange!.end)];
+    return [str, new vscode.Selection(wordRange!.start, wordRange!.end)];
 }
 
 /**
