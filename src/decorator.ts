@@ -3,9 +3,6 @@ import { logger, LogLevel } from './logging';
 import { config } from './configuration';
 import { po } from './po-file';
 
-/**
- * A Logger class that provides logging functionality to the output channel in Visual Studio Code.
- */
 class Decorator {
     private decorationType: vscode.TextEditorDecorationType;
     public activeEditor: vscode.TextEditor | undefined;
@@ -47,9 +44,9 @@ class Decorator {
             return;
         }
 
-        if (!po.skinPO) { 
+        if (!po.skinPO) {
             logger.log('No skin po, attempting to reload po.', LogLevel.Warning);
-            po.loadSkinPO(); 
+            po.loadSkinPO();
         }
 
         const decoratorArray: vscode.DecorationOptions[] = [];
@@ -69,45 +66,55 @@ class Decorator {
     }
 
     findLocalizedStrings(i: number, line: vscode.TextLine) {
-        // var r= /\d+/g;
-        // test for number in line, if no number then exit early
-        var r = /(\$LOCALIZE\[)\d+(\])|(\<label\>)\d+(\<\/label\>)|(\<label2\>)\d+(\<\/label2\>)|(\$INFO\[.*)\d+(.*\])|(label=\")\d+(\")|(labelID=\")\d+(\")/ig;
-        var matches = line.text.match(r);
-        if (!matches) {
-            return undefined;
-        }
-        var dtext: string = '';
+        // RegEx expressions
+        const rMatch = new RegExp([
+            "(?<=\\$LOCALIZE\\[)\\d+(?=\\])",               // Match digits inside $LOCALIZE[...]
+            "(?<=<label>)[^<]*?\\d+[^<]*?(?=</label>)",     // Match digits inside <label>...</label>
+            "(?<=<label2>)[^<]*?\\d+[^<]*?(?=</label2>)",   // Match digits inside <label2>...</label2>
+            "\\$INFO\\[.*\\d+.*\\]",                        // Match digits inside $INFO[...]
+            "(labelID|label|grouping)=\"\\d+\""             // Match digits inside labelID/label/grouping="..."
+        ].join("|"), "ig");
+        const rRemove = new RegExp([
+            "(\\Property\\(.*)\\d+(.*\\))",                 // Remove digits inside Property(...)
+            "(\\Control\\(.*)\\d+(.*\\))",                  // Remove digits inside Control(...)
+            "(\\Container\\(.*)\\d+(.*\\))",                // Remove digits inside Container(...)
+            "(\\ListItem\\(.*)\\d+(.*\\))"                  // Romove digits inside ListItem(...)
+        ].join("|"), "ig");
+        const rNumber = /\d+/g;                             // Match just numbers
+
+        // Find matches in current line
+        var matches = line.text.match(rMatch);
+        if (!matches) { return undefined; }
+
+        var decoratorText: string = '';
         matches.forEach((m) => {
-            // massive hack for my lack of regex knowlage
-            // remove false positives for 'Property(xxxxx)', 'Control(xxxxx)' and 'Container(xxxxx)'
-            var r = /(\Property\(.*)\d+(.*\))|(\Control\(.*)\d+(.*\))|(\Container\(.*)\d+(.*\))|(\ListItem\(.*)\d+(.*\))/ig;
-            var pM = m.match(r);
-            if (pM) {
-                m = m.replace(pM[0], '');
+            // Remove false positives
+            const removals = m.match(rRemove);
+            if (removals) {
+                m = m.replace(removals[0], '');
             }
 
-            var r = /\d+/g;
-            var matches = m.match(r);
+            // Just return the number portion of the match
+            var matches = m.match(rNumber);
             if (matches) {
+                // Check each number for a po string
                 matches.forEach((m) => {
                     const stringId = `#${m}`;
-
                     // Check Skin strings
                     if (po.skinPO) {
                         const skinString = po.skinPO.items?.find(item => item.msgctxt === stringId)?.msgid;
-                        if (skinString) { dtext = dtext.concat(' • ', skinString); }
+                        if (skinString) { decoratorText = decoratorText.concat(' • ', skinString); }
                     }
-
                     // Check Kodi strings
                     if (po.kodiPO) {
                         const kodiString = po.kodiPO.items?.find(item => item.msgctxt === stringId)?.msgid;
-                        if (kodiString) { dtext = dtext.concat(' • ', kodiString); }
+                        if (kodiString) { decoratorText = decoratorText.concat(' • ', kodiString); }
                     }
                 });
             }
         });
 
-        return this.decoration(i, `${dtext}`);
+        return this.decoration(i, `${decoratorText}`);
     }
 }
 

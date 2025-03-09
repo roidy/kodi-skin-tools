@@ -16,7 +16,7 @@
   },
   "homepage": "https://github.com/roidy/kodi-skin-tools/blob/master/README.md",
   "activationEvents": [
-    "workspaceContains:**/*.xml"
+    "workspaceContains:{**/addon.xml,**/Addon.xml,**/ADDON.xml}"
   ],
   "main": "./out/extension.js",
   "contributes": {

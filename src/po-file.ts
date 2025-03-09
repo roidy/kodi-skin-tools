@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import PO from "pofile";
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import path from 'path';
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import { logger, LogLevel } from './logging';
 import { config } from './configuration';
+import { decorator } from './decorator';
 
 /**
  * The POFiles class is responsible for handling the loading, saving, and manipulation of PO (GNU gettext) files.
@@ -33,6 +34,8 @@ class POFiles {
         const body = await response.text();
         const po = PO.parse(body);
         this.kodiPO = po;
+        // Force a decorator update after loading the po file.
+        decorator.updateDecorations();
     }
     /**
      * Loads the skin PO file from the local file system workspace.
