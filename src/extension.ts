@@ -25,6 +25,11 @@ export function activate(context: vscode.ExtensionContext) {
             localize.run();
         })
     );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('kodi-skin-tools.NewTranslation', () => {
+            po.generateTranslation();
+        })
+    );
 
     /**
      * Register all events.

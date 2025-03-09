@@ -24,6 +24,10 @@
       {
         "command": "kodi-skin-tools.Localize",
         "title": "Kodi: Localize"
+      },
+      {
+        "command": "kodi-skin-tools.NewTranslation",
+        "title": "Kodi: Generate translation file"
       }
     ],
     "menus": {
@@ -32,6 +36,10 @@
           "command": "kodi-skin-tools.Localize",
           "group": "1_kodi-skin-tools",
           "when": "resourceExtname == .xml"
+        },
+        {
+          "command": "kodi-skin-tools.NewTranslation",
+          "group": "1_kodi-skin-tools"
         }
       ]
     },

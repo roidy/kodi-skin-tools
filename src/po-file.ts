@@ -12,6 +12,7 @@ import { decorator } from './decorator';
 class POFiles {
     public skinPO: PO | undefined;
     public kodiPO: PO | undefined;
+    private translationCode: string = 'en_us';
 
     /**
      * Initializes a new instance of the POFiles class and loads the skin and Kodi PO files.
@@ -150,6 +151,55 @@ class POFiles {
                 }
             }
         }
+    }
+
+    /**
+     * Generates a new translation file based on the provided country code.
+     */
+    async generateTranslation() {
+        logger.log('Start generate new translation file');
+        const countryCode = await vscode.window.showInputBox({
+            value: `${this.translationCode}`,
+            prompt: "Enter the counrty code to generate a translation file or press 'Enter' to use last value."
+        });
+        if (!countryCode) {
+            logger.log('No country code, exiting!');
+            return;
+        }
+
+        const editor = vscode.window.activeTextEditor;
+        if (editor && editor.document.uri) {
+            const folder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+            const translationDirectory = `${folder!.uri.fsPath}${path.sep}language${path.sep}resource.language.${countryCode}`;
+            const poFile = `${translationDirectory}${path.sep}strings.po`;
+
+            if (!existsSync(translationDirectory)) {
+                mkdirSync(translationDirectory);
+            }
+
+            // Build new po file from skin po
+            var translation = new PO();
+            translation.comments = this.skinPO?.comments || [];
+            translation.headers = this.skinPO?.headers || {};
+            translation.headers.Language = countryCode;
+
+            this.skinPO?.items.forEach(item => {
+                var newItem = new PO.Item();
+                newItem.msgctxt = item.msgctxt;
+                newItem.msgid = item.msgid;
+                newItem.msgstr[0] = item.msgid;
+                translation.items.push(newItem);
+            });
+
+            translation.save(poFile, function (err) {
+                if (err) {
+                    logger.log('Error saving new PO file: ' + err.message);
+                } else {
+                    logger.log('PO file saved successfully');
+                }
+            });
+        }
+
     }
 }
 
