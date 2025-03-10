@@ -65,12 +65,18 @@ class Decorator {
             var decObj = this.findLocalizedStrings(i, line);
 
             if (decObj) {
-                decObj.renderOptions.after.color = (config.decoratorColor as string);
+                decObj.renderOptions.after.color = this.toRGBA(config.decoratorColor as string);
                 endDecoratorArray.push(decObj);
             }
         }
 
         editor.setDecorations(this.decorationType, endDecoratorArray);
+    }
+
+    private toRGBA(hex: string): string {
+        return hex.length === 8 
+            ? `#${hex.slice(2, 8)}${hex.slice(0, 2)}` 
+            : "#FFFFFFFF";
     }
 
     findLocalizedStrings(i: number, line: vscode.TextLine) {
@@ -86,7 +92,7 @@ class Decorator {
             "(\\Property\\(.*)\\d+(.*\\))",                 // Remove digits inside Property(...)
             "(\\Control\\(.*)\\d+(.*\\))",                  // Remove digits inside Control(...)
             "(\\Container\\(.*)\\d+(.*\\))",                // Remove digits inside Container(...)
-            "(\\ListItem\\(.*)\\d+(.*\\))"                  // Romove digits inside ListItem(...)
+            "(\\ListItem\\(.*)\\d+(.*\\))",                 // Romove digits inside ListItem(...)
         ].join("|"), "ig");
         const rNumber = /\d+/g;                             // Match just numbers
 

@@ -84,9 +84,9 @@
         "properties": {
           "kodi-skin-tools.decoratorColor": {
             "type": "string",
-            "format": "color-hex",
-            "default": "#ffffff60",
-            "description": "Decoration color #rrggbbaa"
+            "format": "string",
+            "default": "ffff4020",
+            "description": "Decoration color AARRGGBB"
           },
           "kodi-skin-tools.operation": {
             "type": "string",
