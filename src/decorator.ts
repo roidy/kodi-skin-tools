@@ -2,14 +2,17 @@ import * as vscode from 'vscode';
 import { logger, LogLevel } from './logging';
 import { config } from './configuration';
 import { po } from './po-file';
+import path from 'path';
 
 class Decorator {
     private decorationType: vscode.TextEditorDecorationType;
     public activeEditor: vscode.TextEditor | undefined;
+    public context: vscode.ExtensionContext | undefined;
 
     constructor() {
         this.decorationType = vscode.window.createTextEditorDecorationType({});
         this.activeEditor = vscode.window.activeTextEditor;
+        this.context = undefined;
     }
 
     private decorationMessage(text: string) {
@@ -44,13 +47,17 @@ class Decorator {
             return;
         }
 
+        if (document.fileName.toLowerCase().includes('colors/defualt.xml')) { return; }
+
         if (!po.skinPO) {
             logger.log('No skin po, attempting to reload po.', LogLevel.Warning);
             po.loadSkinPO();
         }
 
-        const decoratorArray: vscode.DecorationOptions[] = [];
-        // Clear current decorators
+        const endDecoratorArray: vscode.DecorationOptions[] = [];
+        const lineCount = editor.document.lineCount;
+        const ranges: vscode.DecorationOptions[] = [];
+
         editor.setDecorations(this.decorationType, []);
 
         for (let i = 0; i < document.lineCount; ++i) {
@@ -59,10 +66,11 @@ class Decorator {
 
             if (decObj) {
                 decObj.renderOptions.after.color = (config.decoratorColor as string);
-                decoratorArray.push(decObj);
+                endDecoratorArray.push(decObj);
             }
         }
-        editor.setDecorations(this.decorationType, decoratorArray);
+
+        editor.setDecorations(this.decorationType, endDecoratorArray);
     }
 
     findLocalizedStrings(i: number, line: vscode.TextLine) {
