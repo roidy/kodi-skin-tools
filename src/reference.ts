@@ -1,5 +1,10 @@
+/**
+ * File: reference.ts
+ * Author: roidy
+ * License: GPL v3 - https://www.gnu.org/licenses/gpl-3.0.html
+ */
+
 import * as vscode from 'vscode';
-import * as utils from './utils';
 import path = require('path');
 import lineReader = require('n-readlines');
 import { findWordInFiles, getWord } from './utils';

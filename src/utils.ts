@@ -1,13 +1,16 @@
+/**
+ * File: utils.ts
+ * Author: roidy
+ * License: GPL v3 - https://www.gnu.org/licenses/gpl-3.0.html
+ */
+
 import * as vscode from 'vscode';
 import fs = require('fs');
 import lineReader = require('n-readlines');
 import path = require('path');
 import { Buffer } from 'buffer';
-import { Socket } from 'net';
 import { logger, LogLevel } from './logging';
 import { config } from './configuration';
-
-
 
 /**
  * Retrieves the word at the current cursor position in the active text editor.

@@ -1,3 +1,9 @@
+/**
+ * File: localize.ts
+ * Author: roidy
+ * License: GPL v3 - https://www.gnu.org/licenses/gpl-3.0.html
+ */
+
 import * as vscode from 'vscode';
 import { logger, LogLevel } from "./logging";
 import { po } from "./po-file";

@@ -1,5 +1,10 @@
+/**
+ * File: configuration.ts
+ * Author: roidy
+ * License: GPL v3 - https://www.gnu.org/licenses/gpl-3.0.html
+ */
+
 import * as vscode from 'vscode';
-import { logger } from './logging';
 
 /**
  * The Configuration class is responsible for loading and managing the configuration settings

@@ -1,3 +1,9 @@
+/**
+ * File: po-file.ts
+ * Author: roidy
+ * License: GPL v3 - https://www.gnu.org/licenses/gpl-3.0.html
+ */
+
 import * as vscode from 'vscode';
 import PO from "pofile";
 import path from 'path';

@@ -1,8 +1,13 @@
+/**
+ * File: decorator.ts
+ * Author: roidy
+ * License: GPL v3 - https://www.gnu.org/licenses/gpl-3.0.html
+ */
+
 import * as vscode from 'vscode';
 import { logger, LogLevel } from './logging';
 import { config } from './configuration';
 import { po } from './po-file';
-import path from 'path';
 
 class Decorator {
     private decorationType: vscode.TextEditorDecorationType;
