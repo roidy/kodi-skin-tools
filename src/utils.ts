@@ -5,6 +5,7 @@ import path = require('path');
 import { Buffer } from 'buffer';
 import { Socket } from 'net';
 import { logger, LogLevel } from './logging';
+import { config } from './configuration';
 
 
 
@@ -111,15 +112,25 @@ function getFilesInDirectory(dir: string, ext: string[], excludeDir: string): st
 }
 
 
+/**
+ * Reloads the Kodi skin by sending a JSON-RPC request to the Kodi server.
+ * 
+ * This function constructs a JSON-RPC request to execute the 'script.vscode.reload' addon on the Kodi server.
+ * It encodes the provided username and password in base64 for HTTP Basic Authentication.
+ * 
+ * @async
+ * @function
+ * @throws Will log an error message if the request fails.
+ * 
+ * @example
+ * // Ensure that the config object is properly set up with the necessary properties:
+ * // config.reloadIPAddress, config.reloadPort, config.reloadUserName, config.reloadPassword
+ * await reloadKodiSkin();
+ */
 export async function reloadKodiSkin() {
-    // Kodi server details
-    const kodiHost = '192.168.0.85';
-    const kodiPort = 8080;
-    const username = 'kodi';
-    const password = 'kodi';
-
     // Encode the username and password in base64
-    const credentials = `${username}:${password}`;
+    const kodiUrl = `http://${config.reloadIPAddress}:${config.reloadPort}/jsonrpc`;
+    const credentials = `${config.reloadUserName}:${config.reloadPassword}`;
     const encodedCredentials = Buffer.from(credentials).toString('base64');
 
     // JSON-RPC request to send
@@ -131,7 +142,7 @@ export async function reloadKodiSkin() {
     };
 
     try {
-        const response = await fetch(`http://${kodiHost}:${kodiPort}/jsonrpc`, {
+        const response = await fetch(kodiUrl, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${encodedCredentials}`,
@@ -142,11 +153,11 @@ export async function reloadKodiSkin() {
         });
 
         if (response.ok) {
-            logger.log('Addon.ExecuteAddon action sent to Kodi with authentication');
+            logger.log('Reload skin request sent to Kodi.');
         } else {
-            logger.log('Error:', LogLevel.Error);
+            logger.log(`Error: ${response.statusText}`, LogLevel.Error);
         }
     } catch (err) {
-        logger.log('Error:', LogLevel.Error);
+        logger.log(`Error: ${err}`, LogLevel.Error);
     }
 }

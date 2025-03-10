@@ -7,9 +7,13 @@ import { logger } from './logging';
  * Visual Studio Code workspace settings and stores them as properties of the class.
  */
 class Configuration {
+  public reloadIPAddress: any;
+  public reloadPort: any;
+  public reloadUserName: any;
+  public reloadPassword: any;
+  public reloadExtensions: string[] | undefined;
   public decoratorColor: any;
   public operation: any;
-  public reloadExtensions: string[] | undefined;
 
   constructor() {
     this.loadConfig();
@@ -27,13 +31,19 @@ class Configuration {
    */
   public loadConfig() {
     const config = vscode.workspace.getConfiguration('kodi-skin-tools');
-    this.decoratorColor = config.get('decoratorColor');
-    this.operation = config.get('operation');
-    this.operation = (this.operation === 'ID') ? true : false;
+
+    this.reloadIPAddress =config.get('ipAddress');
+    this.reloadPort =config.get('port');
+    this.reloadUserName=config.get('userName');
+    this.reloadPassword =config.get('password');
     var extensions = config.get('reloadExtensions') as string;
     if (extensions) {
       this.reloadExtensions = extensions.replace(/\s+/g, "").split(',');
     }
+
+    this.decoratorColor = config.get('decoratorColor');
+    this.operation = config.get('operation');
+    this.operation = (this.operation === 'ID') ? true : false;
   }
 }
 

@@ -43,58 +43,89 @@
         }
       ]
     },
-    "configuration": {
-      "type": "object",
-      "title": "Kodi Skin Tools",
-      "properties": {
-        "kodi-skin-tools.decoratorColor": {
-          "type": "string",
-          "format": "color-hex",
-          "default": "#ffffff60",
-          "description": "Decoration color #rrggbbaa"
-        },
-        "kodi-skin-tools.operation": {
-          "type": "string",
-          "default": "ID",
-          "enum": [
-            "ID",
-            "$LOCALIZE[ID]"
-          ],
-          "description": "Default localization type (ID or $LOCALIZE[ID])"
-        },
-        "kodi-skin-tools.reloadExtensions": {
-          "type": "string",
-          "default": ".xml, .po",
-          "description": "Comma separated list of file extensions that will cause Kodi to reload the skin when saved."
+    "configuration": [
+      {
+        "title": "Reload settings",
+        "properties": {
+          "kodi-skin-tools.ipAddress": {
+            "type": "string",
+            "default": "127.0.0.1",
+            "description": "Kodi IP address.",
+            "order": 0
+          },
+          "kodi-skin-tools.port": {
+            "type": "string",
+            "default": "8080",
+            "description": "Kodi HTTP port.",
+            "order": 1
+          },
+          "kodi-skin-tools.userName": {
+            "type": "string",
+            "default": "kodi",
+            "description": "Kodi control username.",
+            "order": 2
+          },
+          "kodi-skin-tools.password": {
+            "type": "string",
+            "default": "kodi",
+            "description": "Kodi control password.",
+            "order": 3
+          },
+          "kodi-skin-tools.reloadExtensions": {
+            "type": "string",
+            "default": ".xml, .po",
+            "description": "Comma separated list of file extensions that will cause Kodi to reload the skin when saved.",
+            "order": 4
+          }
+        }
+      },
+      {
+        "title": "General settings",
+        "properties": {
+          "kodi-skin-tools.decoratorColor": {
+            "type": "string",
+            "format": "color-hex",
+            "default": "#ffffff60",
+            "description": "Decoration color #rrggbbaa"
+          },
+          "kodi-skin-tools.operation": {
+            "type": "string",
+            "default": "ID",
+            "enum": [
+              "ID",
+              "$LOCALIZE[ID]"
+            ],
+            "description": "Default localization type (ID or $LOCALIZE[ID])"
+          }
         }
       }
+    ],
+    "scripts": {
+      "vscode:prepublish": "npm run compile",
+      "compile": "tsc -p ./",
+      "watch": "tsc -watch -p ./",
+      "pretest": "npm run compile && npm run lint",
+      "lint": "eslint src --ext ts",
+      "test": "vscode-test"
+    },
+    "devDependencies": {
+      "@types/mocha": "^10.0.7",
+      "@types/n-readlines": "^1.0.6",
+      "@types/node": "20.x",
+      "@types/vscode": "^1.98.0",
+      "@typescript-eslint/eslint-plugin": "^7.14.1",
+      "@typescript-eslint/parser": "^7.11.0",
+      "@vscode/test-cli": "^0.0.9",
+      "@vscode/test-electron": "^2.4.0",
+      "eslint": "^8.57.0",
+      "typescript": "^5.4.5"
+    },
+    "dependencies": {
+      "line-reader": "^0.4.0",
+      "n-readlines": "^1.0.1",
+      "node-fetch": "^3.3.2",
+      "pofile": "^1.1.4",
+      "request": "^2.88.2"
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "vscode-test"
-  },
-  "devDependencies": {
-    "@types/mocha": "^10.0.7",
-    "@types/n-readlines": "^1.0.6",
-    "@types/node": "20.x",
-    "@types/vscode": "^1.98.0",
-    "@typescript-eslint/eslint-plugin": "^7.14.1",
-    "@typescript-eslint/parser": "^7.11.0",
-    "@vscode/test-cli": "^0.0.9",
-    "@vscode/test-electron": "^2.4.0",
-    "eslint": "^8.57.0",
-    "typescript": "^5.4.5"
-  },
-  "dependencies": {
-    "line-reader": "^0.4.0",
-    "n-readlines": "^1.0.1",
-    "node-fetch": "^3.3.2",
-    "pofile": "^1.1.4",
-    "request": "^2.88.2"
   }
 }

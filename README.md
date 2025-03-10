@@ -1,71 +1,37 @@
-# kodi-skin-tools README
+# Kodi Skin Tools
 
-This is the README for your extension "kodi-skin-tools". After writing up a brief description, we recommend including the following sections.
+A set of tools to help in the development of [Kodi](http://kodi.tv/) skins.
 
-## Features
+# Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## Skin reloading
 
-For example if there is an image subfolder under your extension project workspace:
+Reload Kodi's skin to view the latest changes when ever a file is saved in the editor. A comma seperated list of extensions can be set to control which files type trigger a reload.
 
-\!\[feature X\]\(images/feature-x.png\)
+Requires [script.vscode.reload](http://) for Kodi to be installed.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Requires remote http control to be active in Kodi with both a username and password set.
 
-## Requirements
+Kodi Settings -> Service -> Control
+ - Allow remote control via HTTP -> ON
+ - Allow remote control from applications on this system -> ON
+ - Allow remote control from applications on other systems -> ON (if Kodi is accessed over a network)
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## Localization
 
-## Extension Settings
+## Color selection
+Edit colors directly in the editor window.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+![Color](images/color1.gif)
 
-For example:
+# Requirements
 
-This extension contributes the following settings:
+Skin reloading requires [script.vscode.reload](http://) for Kodi to be installed.
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+# Extension Settings
 
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+| Setting | Value | Description |
+| --- | --- | --- |
+| kodi-skin-tools.decoratorColor | AARRGGBB | Color of decorated localization text in the hex AARRGGBB format |
+| kodi-skin-tools.operation | ID or $LOCALIZE[ID] | Initial localization will generate ID or $LOCALIZE[ID] |
+| kodi-skin-tools.reloadExtensions | .xml, .po | Comma seperated list of file extension that will be reloaded |

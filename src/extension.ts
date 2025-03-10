@@ -59,7 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }, null, context.subscriptions);
 
-    vscode.workspace.onDidSaveTextDocument(document => {
+    vscode.workspace.onDidSaveTextDocument( document => {
         // Saved document was a po file so reload it.
         if (document.uri.fsPath.endsWith('.po')) {
             po.loadSkinPO();
