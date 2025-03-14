@@ -3,6 +3,7 @@
   "displayName": "Kodi Skin Tools",
   "description": "A set of tools and helpers for the development of Kodi skins.",
   "version": "0.0.1",
+  "publisher": "roidy",
   "engines": {
     "vscode": "^1.98.0"
   },
