@@ -10,7 +10,7 @@
   "categories": [
     "Other"
   ],
-  "icon": "images/icon.png",
+  "icon": "resources/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/roidy/kodi-skin-tools.git"
