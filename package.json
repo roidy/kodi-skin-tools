@@ -99,33 +99,33 @@
           }
         }
       }
-    ],
-    "scripts": {
-      "vscode:prepublish": "npm run compile",
-      "compile": "tsc -p ./",
-      "watch": "tsc -watch -p ./",
-      "pretest": "npm run compile && npm run lint",
-      "lint": "eslint src --ext ts",
-      "test": "vscode-test"
-    },
-    "devDependencies": {
-      "@types/mocha": "^10.0.7",
-      "@types/n-readlines": "^1.0.6",
-      "@types/node": "20.x",
-      "@types/vscode": "^1.98.0",
-      "@typescript-eslint/eslint-plugin": "^7.14.1",
-      "@typescript-eslint/parser": "^7.11.0",
-      "@vscode/test-cli": "^0.0.9",
-      "@vscode/test-electron": "^2.4.0",
-      "eslint": "^8.57.0",
-      "typescript": "^5.4.5"
-    },
-    "dependencies": {
-      "line-reader": "^0.4.0",
-      "n-readlines": "^1.0.1",
-      "node-fetch": "^3.3.2",
-      "pofile": "^1.1.4",
-      "request": "^2.88.2"
-    }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.7",
+    "@types/n-readlines": "^1.0.6",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.98.0",
+    "@typescript-eslint/eslint-plugin": "^7.14.1",
+    "@typescript-eslint/parser": "^7.11.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.4.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "line-reader": "^0.4.0",
+    "n-readlines": "^1.0.1",
+    "node-fetch": "^3.3.2",
+    "pofile": "^1.1.4",
+    "request": "^2.88.2"
   }
 }

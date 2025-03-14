@@ -163,7 +163,6 @@ class POFiles {
      * Generates a new translation file based on the provided country code.
      */
     async generateTranslation() {
-        logger.log('Start generate new translation file');
         const countryCode = await vscode.window.showInputBox({
             value: `${this.translationCode}`,
             prompt: "Enter the counrty code to generate a translation file or press 'Enter' to use last value."
@@ -173,39 +172,69 @@ class POFiles {
             return;
         }
 
+        this.translationCode = countryCode;
+
         const editor = vscode.window.activeTextEditor;
         if (editor && editor.document.uri) {
             const folder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
             const translationDirectory = `${folder!.uri.fsPath}${path.sep}language${path.sep}resource.language.${countryCode}`;
             const poFile = `${translationDirectory}${path.sep}strings.po`;
 
-            if (!existsSync(translationDirectory)) {
+            if (!existsSync(poFile)) {
+                logger.log(`Generating new translation file.`);
                 mkdirSync(translationDirectory);
+
+                // Build new po file from skin po
+                var translation = new PO();
+                translation.comments = this.skinPO?.comments || [];
+                translation.headers = this.skinPO?.headers || {};
+                translation.headers.Language = countryCode;
+
+                this.skinPO?.items.forEach(item => {
+                    var newItem = new PO.Item();
+                    newItem.msgctxt = item.msgctxt;
+                    newItem.msgid = item.msgid;
+                    newItem.msgstr[0] = item.msgid;
+                    translation.items.push(newItem);
+                });
+
+                translation.save(poFile, function (err) {
+                    if (err) {
+                        logger.log('Error saving new PO file: ' + err.message);
+                    } else {
+                        logger.log('PO file saved successfully');
+                    }
+                });
             }
+            else {
+                logger.log(`resource.language.${countryCode} already exists. Appending new strings.`);
+                PO.load(poFile, (err, result) => {
+                    if (err) {
+                        logger.log(`Load error: ${err.message}`, LogLevel.Error);
+                        return;
+                    }
 
-            // Build new po file from skin po
-            var translation = new PO();
-            translation.comments = this.skinPO?.comments || [];
-            translation.headers = this.skinPO?.headers || {};
-            translation.headers.Language = countryCode;
 
-            this.skinPO?.items.forEach(item => {
-                var newItem = new PO.Item();
-                newItem.msgctxt = item.msgctxt;
-                newItem.msgid = item.msgid;
-                newItem.msgstr[0] = item.msgid;
-                translation.items.push(newItem);
-            });
+                    const newItems = result.items.concat(
+                        po.skinPO!.items.filter(item => !result.items.some(skinItem => skinItem.msgctxt === item.msgctxt)));
 
-            translation.save(poFile, function (err) {
-                if (err) {
-                    logger.log('Error saving new PO file: ' + err.message);
-                } else {
-                    logger.log('PO file saved successfully');
-                }
-            });
+                    newItems.forEach(item => {
+                        if (!item.msgstr[0] || item.msgstr[0].trim() === "") {
+                            item.msgstr[0] = item.msgid;
+                        }
+                    });
+
+                    newItems.sort((a, b) => (a > b ? 1 : -1));
+                    result.items = newItems;
+                    result.save(poFile, (err) => {
+                        if (err) {
+                            logger.log(`Save error: ${err.message}`, LogLevel.Error);
+                            return;
+                        }
+                    });
+                });
+            }
         }
-
     }
 }
 
