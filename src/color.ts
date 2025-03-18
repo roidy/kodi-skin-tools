@@ -5,31 +5,61 @@
  */
 
 import * as vscode from 'vscode';
-import { readFileSync } from "fs";
-import { DOMParser } from "xmldom";
+import { readFileSync, writeFileSync } from "fs";
+import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import path from 'path';
 import { logger } from './logging';
 
 export class ColorProvider implements vscode.DocumentColorProvider {
     provideColorPresentations(color: vscode.Color, context: { readonly document: vscode.TextDocument; readonly range: vscode.Range; }, token: vscode.CancellationToken): vscode.ProviderResult<vscode.ColorPresentation[]> {
-        const red = Math.round(color.red * 255);
-        const green = Math.round(color.green * 255);
-        const blue = Math.round(color.blue * 255);
-        const alpha = Math.round(color.alpha * 255);
-        const hexColor = `${alpha.toString(16).padStart(2, '0')}${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}`;
+        const toHex = (value: number): string => Math.round(value * 255).toString(16).padStart(2, '0');
+        const isValidHex = (input: string): boolean => /^[0-9a-fA-F]{8}$/.test(input);
+
+        const hexColor = [toHex(color.alpha), toHex(color.red), toHex(color.green), toHex(color.blue)].join('');
         const colorPresentation = new vscode.ColorPresentation(hexColor);
-        const startOffset = context.document.offsetAt(context.range.start);
-        const endOffset = context.document.offsetAt(context.range.end);
-        const val = context.document.getText().substring(startOffset, endOffset);
-        const isValidHex = (input: string): boolean => {
-            const regex = /^[0-9a-fA-F]{8}$/;
-            return regex.test(input);
-        };
-        if (isValidHex(val)) {
+
+        const { document, range } = context;
+        const startOffset = document.offsetAt(range.start);
+        const endOffset = document.offsetAt(range.end);
+        const selectedText = document.getText().substring(startOffset, endOffset);
+
+        if (token.isCancellationRequested) {
+            logger.log('Operation canceled');
+            return [];
+        }
+
+        if (isValidHex(selectedText)) {
+            // Color is hex value so edit derectly in the document.
             colorPresentation.textEdit = new vscode.TextEdit(context.range, hexColor);
             return [colorPresentation];
         }
         else {
+            // Color is a named value so update the value in colors/defaults.xml
+            const editor = vscode.window.activeTextEditor;
+            if (editor?.document.uri) {
+                const folder = vscode.workspace.getWorkspaceFolder(editor!.document.uri);
+                const colorFile = folder!.uri.fsPath + `${path.sep}colors${path.sep}defaults.xml`;
+                const xml = readFileSync(colorFile, 'utf-8');
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xml, "application/xml");
+
+                const elements = xmlDoc.getElementsByTagName('color');
+                for (let i = 0; i < elements.length; i++) {
+                    const element = elements[i];
+                    if (element.getAttribute('name') === selectedText) {
+                        element.textContent = hexColor; // Update the color value
+                    }
+                }
+                // Serialize the modified XML back to a string
+                const serializer = new XMLSerializer();
+                const xmlOut = serializer.serializeToString(xmlDoc);
+
+                // Save the modified XML to a file
+                // writeFileSync(colorFile, xmlOut, 'utf-8');
+            }
+            // colorPresentation.label = hexColor;
+            // colorPresentation.textEdit = new vscode.TextEdit(context.range, hexColor);
+            colors.deferredColorEdit = { uri: context.document.uri, range: context.range, text: hexColor };
             return [];
         }
     }
@@ -98,6 +128,7 @@ export class ColorProvider implements vscode.DocumentColorProvider {
 
 class Colors {
     public colors: { name: string; value: string | null }[] = [];
+    public deferredColorEdit: { uri: vscode.Uri; range: vscode.Range; text: string } | null = null;
 
     constructor() {
         this.loadColorFile();

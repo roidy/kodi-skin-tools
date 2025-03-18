@@ -21,6 +21,38 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "idView",
+          "title": "ID View",
+          "icon": "resources/id.svg"
+        }
+      ],
+      "explorer": [
+        {
+          "id": "idView",
+          "title": "ID View",
+          "icon": "resources/id.svg"
+        }
+      ]
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "myTreeView",
+          "name": "ID View",
+          "icon": "resources/id.svg"
+        }
+      ],
+      "idView": [
+        {
+          "id": "package-dependencies",
+          "name": "",
+          "icon": "resources/id.svg"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "kodi-skin-tools.Localize",
@@ -123,12 +155,11 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@types/xmldom": "^0.1.34",
+    "@xmldom/xmldom": "^0.9.8",
     "line-reader": "^0.4.0",
     "n-readlines": "^1.0.1",
     "node-fetch": "^3.3.2",
     "pofile": "^1.1.4",
-    "request": "^2.88.2",
-    "xmldom": "^0.6.0"
+    "request": "^2.88.2"
   }
 }

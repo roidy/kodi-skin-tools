@@ -15,6 +15,7 @@ import { DefinitionProvider } from './definition';
 import { ReferenceProvider } from './reference';
 import { ColorProvider } from './color';
 import { colors } from './color';
+import { MyTreeDataProvider } from './idview';
 
 let colorProviderDisposable: vscode.Disposable | undefined;
 
@@ -64,6 +65,17 @@ export function activate(context: vscode.ExtensionContext) {
     }, null, context.subscriptions);
 
     vscode.workspace.onDidChangeTextDocument(event => {
+
+        event.contentChanges.forEach(change => {
+            // logger.log(`Text changed: ${change.text}`);
+            // Optionally, detect if the change is related to a color edit
+            if (change.text.length === 8) {
+                logger.log(`Color selection finalized: ${change.text}`);
+            }
+        });
+
+
+
         if (decorator.activeEditor && event.document === decorator.activeEditor.document) {
             decorator.updateDecorations();
         }
@@ -77,6 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
         // Saved document was the color file so reload it.
         if (document.uri.fsPath.includes('colors/defaults.xml')) {
             colors.loadColorFile();
+            // Dispose of and re-register the ColorProvider to force any open editors to update.
             if (colorProviderDisposable) {
                 colorProviderDisposable.dispose();
             }
@@ -88,6 +101,37 @@ export function activate(context: vscode.ExtensionContext) {
         const hasExtension = config.reloadExtensions!.some(extension => document.uri.fsPath.endsWith(extension));
         if (hasExtension) { reloadKodiSkin(); }
     }, null, context.subscriptions);
+
+    // Listen for editor focus changes
+    vscode.window.onDidChangeWindowState(event => {
+        if (!event.focused) {
+            // Skip if focus is lost (e.g., switching away from VSCode entirely)
+            return;
+        }
+
+        logger.log(`hello even chaged ${event.focused}`);
+
+        // Apply the deferred color edit if available
+        if (colors.deferredColorEdit) {
+            logger.log('Have a deferred color edit to apply.');
+            const { uri, range, text } = colors.deferredColorEdit;
+
+            const edit = new vscode.WorkspaceEdit();
+            edit.replace(uri, range, text);
+
+            vscode.workspace.applyEdit(edit).then(() => {
+                logger.log(`Final color edit applied: %{text}`);
+                colors.deferredColorEdit = null; // Clear the deferred edit
+            });
+        }
+    });
+
+    // vscode.window.createTreeView("package-dependencies", {
+     
+    // });
+
+    vscode.window.registerTreeDataProvider('package-dependencies', new MyTreeDataProvider());
+    vscode.window.registerTreeDataProvider('myTreeView', new MyTreeDataProvider());
 
     /**
      * Register all providers
