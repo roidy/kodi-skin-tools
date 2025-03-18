@@ -6,7 +6,6 @@
 
 import * as vscode from 'vscode';
 import path = require('path');
-import lineReader = require('n-readlines');
 import { findWordInFiles, getWord } from './utils';
 
 export class ReferenceProvider implements vscode.ReferenceProvider {
