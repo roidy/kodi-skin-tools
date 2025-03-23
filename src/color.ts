@@ -11,6 +11,7 @@ import path from 'path';
 import { logger } from './logging';
 
 export class ColorProvider implements vscode.DocumentColorProvider {
+
     provideColorPresentations(color: vscode.Color, context: { readonly document: vscode.TextDocument; readonly range: vscode.Range; }, token: vscode.CancellationToken): vscode.ProviderResult<vscode.ColorPresentation[]> {
         const toHex = (value: number): string => Math.round(value * 255).toString(16).padStart(2, '0');
         const isValidHex = (input: string): boolean => /^[0-9a-fA-F]{8}$/.test(input);
@@ -129,9 +130,45 @@ export class ColorProvider implements vscode.DocumentColorProvider {
 class Colors {
     public colors: { name: string; value: string | null }[] = [];
     public deferredColorEdit: { uri: vscode.Uri; range: vscode.Range; text: string } | null = null;
+    public documentNamedColors = new Set<string>();
 
     constructor() {
         this.loadColorFile();
+        this.documentsGetNamedColors();
+    }
+
+    public async documentsGetNamedColors() {
+        const xmlFiles = await vscode.workspace.findFiles('**/*.xml');
+
+        this.documentNamedColors.clear();
+
+        for (const file of xmlFiles) {
+            const document = await vscode.workspace.openTextDocument(file);
+            const text = document.getText();
+
+            const hexRegex = /^[0-9A-Fa-f]{8}$/;
+            const nMatch = new RegExp([
+                "<textcolor>(.*?)<\/textcolor>",
+                "<selectedcolor>(.*?)<\/selectedcolor>",
+                "<shadowcolor>(.*?)<\/shadowcolor>",
+                "<focusedcolor>(.*?)<\/focusedcolor>",
+                "<disabledcolor>(.*?)<\/disabledcolor>",
+                "<colordiffuse>(.*?)<\/colordiffuse>",
+                "colordiffuse=\"(.*?)\""
+            ].join("|"), "ig");
+
+            const namedMatches = text.matchAll(nMatch);
+            for (const match of namedMatches) {
+                const content = match.slice(1).find(group => group !== undefined);
+                if (content && !hexRegex.test(content)) {
+                    this.documentNamedColors.add(content);
+                }
+            }
+
+        }
+        Array.from(this.documentNamedColors).forEach(value => logger.log(value));
+
+        return;
     }
 
     public loadColorFile() {

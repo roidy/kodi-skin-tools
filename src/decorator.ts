@@ -42,7 +42,7 @@ class Decorator {
         };
     }
 
-    updateDecorations() {
+    async updateDecorations() {
         const editor = vscode.window.activeTextEditor;
         if (editor === undefined) {
             return;
@@ -52,7 +52,11 @@ class Decorator {
             return;
         }
 
-        if (document.fileName.toLowerCase().includes('colors/defualt.xml')) { return; }
+        if (document.fileName.toLowerCase().includes('colors/defaults.xml')) {
+            // this.scanForColor();
+
+            
+        }
 
         if (!po.skinPO) {
             logger.log('No skin po, attempting to reload po.', LogLevel.Warning);
@@ -79,8 +83,8 @@ class Decorator {
     }
 
     private toRGBA(hex: string): string {
-        return hex.length === 8 
-            ? `#${hex.slice(2, 8)}${hex.slice(0, 2)}` 
+        return hex.length === 8
+            ? `#${hex.slice(2, 8)}${hex.slice(0, 2)}`
             : "#FFFFFFFF";
     }
 
@@ -97,7 +101,7 @@ class Decorator {
             "(\\Property\\(.*)\\d+(.*\\))",                 // Remove digits inside Property(...)
             "(\\Control\\(.*)\\d+(.*\\))",                  // Remove digits inside Control(...)
             "(\\Container\\(.*)\\d+(.*\\))",                // Remove digits inside Container(...)
-            "(\\ListItem\\(.*)\\d+(.*\\))",                 // Romove digits inside ListItem(...)
+            "(\\ListItem\\(.*)\\d+(.*\\))"                  // Remove digits inside ListItem(...)
         ].join("|"), "ig");
         const rNumber = /\d+/g;                             // Match just numbers
 

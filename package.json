@@ -2,7 +2,7 @@
   "name": "kodi-skin-tools",
   "displayName": "Kodi Skin Tools",
   "description": "A set of tools and helpers for the development of Kodi skins.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "roidy",
   "engines": {
     "vscode": "^1.98.0"
@@ -24,15 +24,8 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "idView",
-          "title": "ID View",
-          "icon": "resources/id.svg"
-        }
-      ],
-      "explorer": [
-        {
-          "id": "idView",
-          "title": "ID View",
+          "id": "customExplorer",
+          "title": "Custom Explorer",
           "icon": "resources/id.svg"
         }
       ]
@@ -40,15 +33,15 @@
     "views": {
       "explorer": [
         {
-          "id": "myTreeView",
+          "id": "idView",
           "name": "ID View",
           "icon": "resources/id.svg"
         }
       ],
-      "idView": [
+      "customExplorer": [
         {
-          "id": "package-dependencies",
-          "name": "",
+          "id": "myCustomWebview",
+          "name": "My Webview",
           "icon": "resources/id.svg"
         }
       ]
@@ -143,6 +136,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
+    "@types/cheerio": "^0.22.35",
     "@types/mocha": "^10.0.7",
     "@types/n-readlines": "^1.0.6",
     "@types/node": "20.x",
@@ -156,6 +150,7 @@
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.9.8",
+    "cheerio": "^1.0.0",
     "line-reader": "^0.4.0",
     "n-readlines": "^1.0.1",
     "node-fetch": "^3.3.2",
