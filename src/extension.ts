@@ -45,6 +45,40 @@ export function activate(context: vscode.ExtensionContext) {
     /**
      * Register all commands.
      */
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('kodi-skin-tools.showProgress', async () => {
+            await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification, // Options: Notification, Window, or Editor
+                    title: 'Processing Files',
+                    cancellable: true, // Allows the user to cancel the operation
+                },
+                async (progress, token) => {
+                    token.onCancellationRequested(() => {
+                        console.log('User canceled the operation.');
+                    });
+
+                    const totalSteps = 10;
+                    for (let i = 0; i < totalSteps; i++) {
+                        if (token.isCancellationRequested) {
+                            break;
+                        }
+
+                        // Simulate a long-running task
+                        await new Promise((resolve) => setTimeout(resolve, 500));
+
+                        // Update progress
+                        progress.report({
+                            increment: 100 / totalSteps,
+                            message: `Step ${i + 1} of ${totalSteps}`,
+                        });
+                    }
+                }
+            );
+        })
+    );
+
     context.subscriptions.push(
         vscode.commands.registerCommand('kodi-skin-tools.Localize', () => {
             localize.run();
@@ -93,7 +127,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Active text editor changed
     vscode.window.onDidChangeActiveTextEditor(async editor => {
         if (editor) {
-            if(editor.document.fileName.includes('colors/defaults.xml')) {
+            if (editor.document.fileName.includes('colors/defaults.xml')) {
                 colors.documentsGetNamedColors();
             }
             decorator.activeEditor = editor;

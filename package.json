@@ -21,27 +21,11 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "customExplorer",
-          "title": "Custom Explorer",
-          "icon": "resources/id.svg"
-        }
-      ]
-    },
     "views": {
       "explorer": [
         {
           "id": "idView",
           "name": "ID View",
-          "icon": "resources/id.svg"
-        }
-      ],
-      "customExplorer": [
-        {
-          "id": "myCustomWebview",
-          "name": "My Webview",
           "icon": "resources/id.svg"
         }
       ]
@@ -54,9 +38,25 @@
       {
         "command": "kodi-skin-tools.NewTranslation",
         "title": "Kodi: Generate translation file"
+      },
+      {
+        "command": "kodi-skin-tools.showProgress",
+        "title": "Kodi: Show Progress"
+      },
+      {
+        "command": "kodi-skin-tools.myCustomButton",
+        "title": "Custom Action",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "kodi-skin-tools.myCustomButton",
+          "when": "view == idView",
+          "group": "navigation"
+        }
+      ],
       "editor/context": [
         {
           "command": "kodi-skin-tools.Localize",
@@ -65,6 +65,10 @@
         },
         {
           "command": "kodi-skin-tools.NewTranslation",
+          "group": "1_kodi-skin-tools"
+        },
+        {
+          "command": "kodi-skin-tools.showProgress",
           "group": "1_kodi-skin-tools"
         }
       ]

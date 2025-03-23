@@ -34,7 +34,7 @@ class POFiles {
     async loadKodiPO() {
         const response = await fetch('https://raw.githubusercontent.com/xbmc/xbmc/master/addons/resource.language.en_gb/resources/strings.po');
         if (response.status !== 200) {
-            logger.log('Unable to fetch Kodi po file from GitHub.', LogLevel.Error);
+            logger.log('Unable to fetch Kodi po file from GitHub. Will retry later.', LogLevel.Warning);
             this.kodiPO = undefined;
             return;
         }
@@ -82,8 +82,6 @@ class POFiles {
             this.skinPO?.save(poFile, function (err) {
                 if (err) {
                     logger.log('Error saving new PO file: ' + err.message);
-                } else {
-                    logger.log('PO file saved successfully');
                 }
             });
         }
@@ -167,10 +165,7 @@ class POFiles {
             value: `${this.translationCode}`,
             prompt: "Enter the counrty code to generate a translation file or press 'Enter' to use last value."
         });
-        if (!countryCode) {
-            logger.log('No country code, exiting!');
-            return;
-        }
+        if (!countryCode) { return; }
 
         this.translationCode = countryCode;
 
@@ -181,7 +176,6 @@ class POFiles {
             const poFile = `${translationDirectory}${path.sep}strings.po`;
 
             if (!existsSync(poFile)) {
-                logger.log(`Generating new translation file.`);
                 mkdirSync(translationDirectory);
 
                 // Build new po file from skin po
@@ -201,13 +195,10 @@ class POFiles {
                 translation.save(poFile, function (err) {
                     if (err) {
                         logger.log('Error saving new PO file: ' + err.message);
-                    } else {
-                        logger.log('PO file saved successfully');
-                    }
+                    } 
                 });
             }
             else {
-                logger.log(`resource.language.${countryCode} already exists. Appending new strings.`);
                 PO.load(poFile, (err, result) => {
                     if (err) {
                         logger.log(`Load error: ${err.message}`, LogLevel.Error);

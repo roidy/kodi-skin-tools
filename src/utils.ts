@@ -154,12 +154,6 @@ export async function reloadKodiSkin() {
             },
             body: JSON.stringify(request)
         });
-
-        if (response.ok) {
-            logger.log('Reload skin request sent to Kodi.');
-        } else {
-            logger.log(`Error: ${response.statusText}`, LogLevel.Error);
-        }
     } catch (err) {
         logger.log(`Error: ${err}`, LogLevel.Error);
     }

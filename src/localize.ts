@@ -14,8 +14,6 @@ class Localize {
     constructor() { }
 
     public run() {
-        logger.log('Localization.run - started.');
-
         // Check we have loaded po files and try to load them if not.
         if (!po.kodiPO) { po.loadKodiPO(); }
         if (!po.skinPO) { po.loadSkinPO(); }
@@ -28,31 +26,20 @@ class Localize {
         const editor = vscode.window.activeTextEditor;
         const document = editor!.document;
         if (!editor || !document) {
-            logger.log('Failed to get editor or document.', LogLevel.Error);
             return;
         }
 
         const [word, selection] = getWord();
 
-        if (!word) {
-            logger.log('No word selected.', LogLevel.Warning);
-            return;
-        }
-
-        logger.log(`Found word: ${word}`);
+        if (!word) { return; }
 
         // Check if selection is a number and return early
         const result = this.isNumber(selection);
-        if (result) {
-            // Selction was a number or just swapped, exit early
-            logger.log('Performed swap.');
-            return;
-        }
+        if (result) { return; }
 
         // Check if the string exists in the po files
         const id = po.getID(word);
         if (id) {
-            logger.log(`String with id: ${id} exists in po.`);
             editor.edit(editBuilder => {
                 editBuilder.replace(selection, id);
             });
@@ -63,7 +50,6 @@ class Localize {
         po.createEntry(word);
         const newId = po.getID(word);
         if (newId) {
-            logger.log(`Created new po entry with id: ${newId}.`);
             editor.edit(editBuilder => {
                 editBuilder.replace(selection, newId!);
             });

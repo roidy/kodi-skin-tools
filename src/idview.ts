@@ -86,7 +86,6 @@ export class MyTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
     }
 
     findControls() {
-        logger.log('Start findcontols');
         const editor = vscode.window.activeTextEditor;
         if (!editor) { return; }
 
@@ -101,7 +100,6 @@ export class MyTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
             const type = match[3] || match[4];
             const index = match.index + match[0].indexOf(`id="${id}"`);
             const item = `${id.trim()}  -  ${type?.[0]?.toUpperCase() + type?.slice(1) || ""}`;
-            logger.log(item);
             if (!isNaN(Number(id))) {
                 subNodes.push(new TreeNode(item, { command: 'extension.treeItemClick', title: '', arguments: [{ index: index }] }));
             }

@@ -25,7 +25,6 @@ export class ColorProvider implements vscode.DocumentColorProvider {
         const selectedText = document.getText().substring(startOffset, endOffset);
 
         if (token.isCancellationRequested) {
-            logger.log('Operation canceled');
             return [];
         }
 
@@ -166,8 +165,6 @@ class Colors {
             }
 
         }
-        Array.from(this.documentNamedColors).forEach(value => logger.log(value));
-
         return;
     }
 
