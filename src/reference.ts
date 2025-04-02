@@ -10,9 +10,9 @@ import { findWordInFiles, getWord } from './utils';
 
 export class ReferenceProvider implements vscode.ReferenceProvider {
 
-    provideReferences(document: vscode.TextDocument,
+    async provideReferences(document: vscode.TextDocument,
         position: vscode.Position, _context: vscode.ReferenceContext,
-        token: vscode.CancellationToken): vscode.ProviderResult<vscode.Location[]> | undefined {
+        token: vscode.CancellationToken): Promise<vscode.Location[] | null | undefined> {
 
         const workingDir = path.dirname(document.fileName);
         const [word, _] = getWord();
@@ -21,7 +21,7 @@ export class ReferenceProvider implements vscode.ReferenceProvider {
             return undefined;
         }
 
-        const r = findWordInFiles(workingDir, word);
+        const r = await findWordInFiles(word);
         return r;
     }
 

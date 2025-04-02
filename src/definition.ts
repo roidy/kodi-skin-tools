@@ -7,13 +7,14 @@
 import * as vscode from 'vscode';
 import path = require('path');
 import { findWordInFiles, getWord } from './utils';
+import { logger } from './logging';
 
 
 export class DefinitionProvider implements vscode.DefinitionProvider {
 
-    provideDefinition(document: vscode.TextDocument,
+    async provideDefinition(document: vscode.TextDocument,
         position: vscode.Position,
-        _token: vscode.CancellationToken): vscode.Definition | undefined {
+        _token: vscode.CancellationToken): Promise<vscode.Definition | undefined> {
 
         const editor = vscode.window.activeTextEditor;
         if (!editor!.document.uri) { return; }
@@ -43,8 +44,9 @@ export class DefinitionProvider implements vscode.DefinitionProvider {
             matcher = `<constant name="${word}"`;
         }
 
-        const r = findWordInFiles(workingDir, word, matcher, true);
-        return r![0];
+        logger.log(`Matcher: ${matcher}`);
+        const r = await findWordInFiles(matcher, false);
+        return r[0];
     }
 
 };

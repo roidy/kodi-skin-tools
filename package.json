@@ -26,7 +26,12 @@
         {
           "id": "idView",
           "name": "ID View",
-          "icon": "resources/id.svg"
+          "icon": ""
+        },
+        {
+          "id": "reportView",
+          "name": "Skin report",
+          "icon": ""
         }
       ]
     },
@@ -44,16 +49,16 @@
         "title": "Kodi: Show Progress"
       },
       {
-        "command": "kodi-skin-tools.myCustomButton",
-        "title": "Custom Action",
-        "icon": "$(refresh)"
+        "command": "kodi-skin-tools.runReport",
+        "title": "Run",
+        "icon": "$(run)"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "kodi-skin-tools.myCustomButton",
-          "when": "view == idView",
+          "command": "kodi-skin-tools.runReport",
+          "when": "view == reportView",
           "group": "navigation"
         }
       ],

@@ -10,7 +10,7 @@ interface DefaultIDItem {
 }
 type DefaultIDMap = Record<string, DefaultIDItem[]>;
 
-export class MyTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
+export class IdViewDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null> = new vscode.EventEmitter<vscode.TreeItem | undefined | null>();
     readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null> = this._onDidChangeTreeData.event;
 
@@ -79,7 +79,7 @@ export class MyTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
 
         if (this.defaultIDs[name]) {
             this.defaultIDs[name].forEach((item: DefaultIDItem) => {
-                subNodes.push(new TreeNode(`${item.ID}  -  ${item.Type?.[0]?.toUpperCase() + item.Type?.slice(1) || ""}  -  ${item.Description}`, { command: 'extension.treeItemClick', title: '', arguments: [{ id: item.ID }] }));
+                subNodes.push(new TreeNode(`${item.ID}  -  ${item.Type?.[0]?.toUpperCase() + item.Type?.slice(1) || ""}  -  ${item.Description}`, { command: 'extension.idViewItemClick', title: '', arguments: [{ id: item.ID }] }));
             });
             this.parentChildMap = [new TreeNode('Documented controls', undefined, vscode.TreeItemCollapsibleState.Collapsed, subNodes)];
         }
@@ -101,7 +101,7 @@ export class MyTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
             const index = match.index + match[0].indexOf(`id="${id}"`);
             const item = `${id.trim()}  -  ${type?.[0]?.toUpperCase() + type?.slice(1) || ""}`;
             if (!isNaN(Number(id))) {
-                subNodes.push(new TreeNode(item, { command: 'extension.treeItemClick', title: '', arguments: [{ index: index }] }));
+                subNodes.push(new TreeNode(item, { command: 'extension.idViewItemClick', title: '', arguments: [{ index: index }] }));
             }
         }
         if (subNodes.length > 0) {
@@ -138,10 +138,11 @@ export class MyTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
 export class TreeNode extends vscode.TreeItem {
     children: TreeNode[];
 
-    constructor(label: string, command?: vscode.Command, collapsed?: vscode.TreeItemCollapsibleState, children: TreeNode[] = []) {
+    constructor(label: string, command?: vscode.Command, collapsed?: vscode.TreeItemCollapsibleState, children: TreeNode[] = [], icon?: vscode.ThemeIcon) {
         super(label, children.length ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
         this.collapsibleState = collapsed;
         this.children = children;
         this.command = command;
+        this.iconPath = icon;
     }
 }

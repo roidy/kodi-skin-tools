@@ -26,7 +26,7 @@ class Logger {
      */
     constructor() {
         this.outputChannel = vscode.window.createOutputChannel('Kodi Skin Tools');
-        this.outputChannel.show(true);
+        // this.outputChannel.show(true);
     }
 
     /**

@@ -15,7 +15,7 @@ import { DefinitionProvider } from './definition';
 import { ReferenceProvider } from './reference';
 import { ColorProvider } from './color';
 import { colors } from './color';
-import { MyTreeDataProvider } from './idview';
+import { IdViewDataProvider } from './idview';
 
 let colorProviderDisposable: vscode.Disposable | undefined;
 
@@ -27,15 +27,15 @@ export function activate(context: vscode.ExtensionContext) {
     logger.log('Kodi Skin Tools is active.', LogLevel.Info);
 
     // Create the TreeDataProvider
-    const treeDataProvider = new MyTreeDataProvider();
+    const idViewProvider = new IdViewDataProvider();
 
     // Create and register the TreeView
-    treeDataProvider.treeView = vscode.window.createTreeView("idView", {
-        treeDataProvider,
+    idViewProvider.treeView = vscode.window.createTreeView("idView", {
+        treeDataProvider: idViewProvider,
         showCollapseAll: true,
     });
 
-    treeDataProvider.refresh();
+    idViewProvider.refresh();
 
     decorator.context = context;
     let throttleTimeout: NodeJS.Timeout | undefined;
@@ -45,7 +45,6 @@ export function activate(context: vscode.ExtensionContext) {
     /**
      * Register all commands.
      */
-
     context.subscriptions.push(
         vscode.commands.registerCommand('kodi-skin-tools.showProgress', async () => {
             await vscode.window.withProgress(
@@ -90,7 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand('extension.treeItemClick', (args: { id: string, index: string }) => {
+        vscode.commands.registerCommand('extension.idViewItemClick', (args: { id: string, index: string }) => {
             const editor = vscode.window.activeTextEditor;
             if (!editor) { return; }
             let index: number;
@@ -133,7 +132,7 @@ export function activate(context: vscode.ExtensionContext) {
             decorator.activeEditor = editor;
             decorator.updateDecorations();
         }
-        treeDataProvider.refresh();
+        idViewProvider.refresh();
     }, null, context.subscriptions);
 
     // An edit was made to the current text document
@@ -144,7 +143,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             throttleTimeout = setTimeout(() => {
-                treeDataProvider.refresh();
+                idViewProvider.refresh();
                 decorator.updateDecorations();
                 throttleTimeout = undefined; // Reset the timeout
             }, 600); // Throttle for 300ms
@@ -154,7 +153,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Document saved
     vscode.workspace.onDidSaveTextDocument(document => {
-        treeDataProvider.refresh();
+        idViewProvider.refresh();
         // Saved document was a po file so reload it.
         if (document.uri.fsPath.endsWith('.po')) {
             po.loadSkinPO();

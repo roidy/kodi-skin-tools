@@ -11,6 +11,7 @@ import path = require('path');
 import { Buffer } from 'buffer';
 import { logger, LogLevel } from './logging';
 import { config } from './configuration';
+import { po } from './po-file';
 
 /**
  * Retrieves the word at the current cursor position in the active text editor.
@@ -34,56 +35,43 @@ export function getWord(toLower: boolean = false): any[] {
     const wordRange = editor.selection.isEmpty
         ? editor!.document.getWordRangeAtPosition(position)
         : editor.selection;
-    
+
     const str = toLower ? editor.document.getText(wordRange).toLowerCase() : editor.document.getText(wordRange);
 
     return [str, new vscode.Selection(wordRange!.start, wordRange!.end)];
 }
 
 /**
- * Finds occurrences of a target word in files within a specified directory.
+ * Searches for occurrences of a target word or pattern in files within the workspace.
  *
- * @param directory - The directory to search in.
- * @param targetWord - The word to search for.
- * @param customMatcher - An optional custom regex pattern to use for matching.
- * @param findFirstMatch - Whether to stop searching after the first match is found. Defaults to `false`.
- * @param ext - An array of file extensions to include in the search. Defaults to `['.xml', '.po']`.
- * @param excludeDir - A directory to exclude from the search. Defaults to `'backup'`.
- * @returns An array of `vscode.Location` objects representing the locations of the matches.
+ * @param targetMatch - The word or regex pattern to search for in the files.
+ * @param findFirstMatch - If `true`, stops searching after finding the first match. Defaults to `false`.
+ * @param ext - The file extension(s) to include in the search. Supports glob patterns. Defaults to `"{*.xml,*.po}"`.
+ * @param excludeDir - The directory to exclude from the search. Defaults to `'backup'`.
+ * @returns A promise that resolves to an array of `vscode.Location` objects representing the positions of matches.
+ *
+ * @throws Will throw an error if there is an issue accessing files or reading their contents.
  */
-export function findWordInFiles(directory: string, targetWord: string, customMatcher?: string, findFirstMatch = false, ext = ['.xml', '.po'], excludeDir = 'backup'): vscode.Location[] {
-    if (!fs.existsSync(directory)) {
-        return [];
-    }
-
-    const files = getFilesInDirectory(directory, ext, excludeDir);
+export async function findWordInFiles(targetMatch: string, findFirstMatch = false, ext = "{*.xml,*.po}", excludeDir = 'backup'): Promise<vscode.Location[]> {
+    const files = await vscode.workspace.findFiles(`**/${ext}`, `**/${excludeDir}/**`);
     const locations: vscode.Location[] = [];
+    const regex = new RegExp(targetMatch, 'ig');
 
     for (const file of files) {
-        let lineNumber = 0;
-        const lines = new lineReader(file);
-
-        const regex = new RegExp(customMatcher || targetWord, 'i');
-        while (true) {
-            const line = lines.next();
-            if (!line) { break; };
-            lineNumber++;
-            const lineStr = line.toString();
-            const match = lineStr.match(regex);
-            if (match) {
-                const firstChar = match.index!;
-                const lastChar = firstChar + targetWord.length;
-                const start = new vscode.Position(lineNumber - 1, firstChar);
-                const end = new vscode.Position(lineNumber - 1, lastChar);
-                const range = new vscode.Range(start, end);
-                const location = new vscode.Location(vscode.Uri.file(file), range);
+        const document = await vscode.workspace.openTextDocument(file);
+        const text = document.getText();
+        const matches = text.matchAll(regex);
+        for (const match of matches) {
+            if (match.index !== undefined) {
+                const position = document.positionAt(match.index);
+                const range = new vscode.Range(position, position.translate(0, targetMatch.length));
+                const location = new vscode.Location(document.uri, range);
                 locations.push(location);
                 if (findFirstMatch) { break; }
             }
         }
         if (findFirstMatch && locations.length !== 0) { break; }
     }
-
     return locations;
 }
 
