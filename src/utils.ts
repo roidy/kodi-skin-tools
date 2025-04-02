@@ -5,13 +5,9 @@
  */
 
 import * as vscode from 'vscode';
-import fs = require('fs');
-import lineReader = require('n-readlines');
-import path = require('path');
 import { Buffer } from 'buffer';
 import { logger, LogLevel } from './logging';
 import { config } from './configuration';
-import { po } from './po-file';
 
 /**
  * Retrieves the word at the current cursor position in the active text editor.
@@ -76,47 +72,12 @@ export async function findWordInFiles(targetMatch: string, findFirstMatch = fals
 }
 
 /**
- * Recursively retrieves all files in a directory with specified extensions, excluding a specific directory.
- *
- * @param {string} dir - The directory to search within.
- * @param {string[]} ext - An array of file extensions to include in the results.
- * @param {string} excludeDir - A directory to exclude from the search.
- * @returns {string[]} An array of file paths that match the specified extensions.
- */
-function getFilesInDirectory(dir: string, ext: string[], excludeDir: string): string[] {
-    if (!fs.existsSync(dir)) { return []; }
-
-    const files: string[] = [];
-    fs.readdirSync(dir).forEach((file: string) => {
-        const filePath = path.join(dir, file);
-        const stat = fs.lstatSync(filePath);
-
-        if (stat.isDirectory() && filePath.indexOf(excludeDir) === -1) {
-            files.push(...getFilesInDirectory(filePath, ext, excludeDir));
-        } else if (ext.includes(path.extname(file))) {
-            console.log(path.extname(file));
-            files.push(filePath);
-        }
-    });
-
-    return files;
-}
-
-
-/**
  * Reloads the Kodi skin by sending a JSON-RPC request to the Kodi server.
  * 
  * This function constructs a JSON-RPC request to execute the 'script.vscode.reload' addon on the Kodi server.
  * It encodes the provided username and password in base64 for HTTP Basic Authentication.
- * 
- * @async
- * @function
+ *
  * @throws Will log an error message if the request fails.
- * 
- * @example
- * // Ensure that the config object is properly set up with the necessary properties:
- * // config.reloadIPAddress, config.reloadPort, config.reloadUserName, config.reloadPassword
- * await reloadKodiSkin();
  */
 export async function reloadKodiSkin() {
     // Encode the username and password in base64
