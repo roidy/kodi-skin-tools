@@ -16,21 +16,15 @@ export class DefinitionProvider implements vscode.DefinitionProvider {
         position: vscode.Position,
         _token: vscode.CancellationToken): Promise<vscode.Definition | undefined> {
 
-        const editor = vscode.window.activeTextEditor;
-        if (!editor!.document.uri) { return; }
-
         const [word, _] = getWord(true);
         if (!word) { return; }
 
-        let workingDir = path.dirname(document.fileName);
         const isNum = /^\d+$/.test(word);
         const line = document.lineAt(position).text.toLowerCase();
         let matcher;
 
-
         // Choose definition matcher
         if (isNum) {
-            workingDir = vscode.workspace.getWorkspaceFolder(editor!.document.uri)?.uri.fsPath + `${path.sep}language`;
             matcher = `msgctxt "#${word}"`;
         } else if (line.includes(`$exp[${word.toLowerCase()}`)) {
             matcher = `<expression name="${word}"`;

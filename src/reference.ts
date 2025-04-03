@@ -13,8 +13,6 @@ export class ReferenceProvider implements vscode.ReferenceProvider {
     async provideReferences(document: vscode.TextDocument,
         position: vscode.Position, _context: vscode.ReferenceContext,
         token: vscode.CancellationToken): Promise<vscode.Location[] | null | undefined> {
-
-        const workingDir = path.dirname(document.fileName);
         const [word, _] = getWord();
 
         if (!word) {

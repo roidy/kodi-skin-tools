@@ -19,6 +19,8 @@ class Configuration {
   public reloadExtensions: string[] | undefined;
   public decoratorColor: any;
   public operation: any;
+  public mediaExcludeGlob: any;
+  public mediaExcludeKeywords: string[] | undefined;
 
   constructor() {
     this.loadConfig();
@@ -29,10 +31,6 @@ class Configuration {
    * 
    * This method retrieves the configuration settings from the VS Code workspace
    * and assigns the values to the corresponding properties of the class.
-   * 
-   * @remarks
-   * - `decoratorColor`: The color used for decorators.
-   * - `operation`: A boolean flag indicating the type of operation. True = ID / False = $LOCALIZE[]
    */
   public loadConfig() {
     const config = vscode.workspace.getConfiguration('kodi-skin-tools');
@@ -49,6 +47,12 @@ class Configuration {
     this.decoratorColor = config.get('decoratorColor');
     this.operation = config.get('operation');
     this.operation = (this.operation === 'ID') ? true : false;
+
+    this.mediaExcludeGlob = config.get('mediaExcludeGlob');
+    var keywords = config.get('mediaExcludeKeywords') as string;
+    if (keywords) {
+      this.mediaExcludeKeywords = keywords.replace(/\s+/g, "").split(',');
+    }
   }
 }
 

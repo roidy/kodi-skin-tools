@@ -29,7 +29,7 @@
           "icon": ""
         },
         {
-          "id": "reportView",
+          "id": "reportsView",
           "name": "Skin report",
           "icon": ""
         }
@@ -58,7 +58,7 @@
       "view/title": [
         {
           "command": "kodi-skin-tools.runReport",
-          "when": "view == reportView",
+          "when": "view == reportsView",
           "group": "navigation"
         }
       ],
@@ -131,6 +131,23 @@
               "$LOCALIZE[ID]"
             ],
             "description": "Default localization type (ID or $LOCALIZE[ID])"
+          }
+        }
+      },
+      {
+        "title": "Scan settings",
+        "properties": {
+          "kodi-skin-tools.mediaExcludeGlob": {
+            "type": "string",
+            "format": "glob",
+            "default": "",
+            "description": "Glob pattern to exclude directories from the media scan"
+          },
+          "kodi-skin-tools.mediaExcludeKeywords": {
+            "type": "string",
+            "format": "",
+            "default": "",
+            "description": "Comma separated list of words. If a media file name contains the keyword it will not be scanned."
           }
         }
       }

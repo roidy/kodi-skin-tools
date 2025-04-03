@@ -1,3 +1,9 @@
+/**
+ * File: idview.ts
+ * Author: roidy
+ * License: GPL v3 - https://www.gnu.org/licenses/gpl-3.0.html
+ */
+
 import * as vscode from 'vscode';
 import { logger } from './logging';
 import * as cheerio from 'cheerio';
@@ -90,16 +96,16 @@ export class IdViewDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
         if (!editor) { return; }
 
         const regex = /<control[^>]*\b(id="([^"]+)"[^>]*type="([^"]+)"|type="([^"]+)"[^>]*id="([^"]+)")/g;
-        const results: { id: string; type: string; index: number }[] = [];
         let match;
+        const document = editor.document;
 
         let subNodes: TreeNode[] | undefined = [];
 
-        while ((match = regex.exec(editor.document.getText())) !== null) {
+        while ((match = regex.exec(document.getText())) !== null) {
             const id = match[2] || match[5];
             const type = match[3] || match[4];
             const index = match.index + match[0].indexOf(`id="${id}"`);
-            const item = `${id.trim()}  -  ${type?.[0]?.toUpperCase() + type?.slice(1) || ""}`;
+            const item = `${id.trim()}  -  ${type?.[0]?.toUpperCase() + type?.slice(1) || ""} - line: ${document.positionAt(index).line + 1}`;
             if (!isNaN(Number(id))) {
                 subNodes.push(new TreeNode(item, { command: 'extension.idViewItemClick', title: '', arguments: [{ index: index }] }));
             }

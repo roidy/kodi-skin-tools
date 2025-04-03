@@ -16,6 +16,7 @@ import { ReferenceProvider } from './reference';
 import { ColorProvider } from './color';
 import { colors } from './color';
 import { IdViewDataProvider } from './idview';
+import { ReportsDataProvider } from './reports';
 
 let colorProviderDisposable: vscode.Disposable | undefined;
 
@@ -26,15 +27,21 @@ export function activate(context: vscode.ExtensionContext) {
 
     logger.log('Kodi Skin Tools is active.', LogLevel.Info);
 
-    // Create the TreeDataProvider
+    // Create the TreeDataProviders
     const idViewProvider = new IdViewDataProvider();
+    const reportsProvider = new ReportsDataProvider();
 
-    // Create and register the TreeView
+    // Create and register the TreeViews
     idViewProvider.treeView = vscode.window.createTreeView("idView", {
         treeDataProvider: idViewProvider,
         showCollapseAll: true,
     });
+    reportsProvider.treeView = vscode.window.createTreeView("reportsView", {
+        treeDataProvider: reportsProvider,
+        showCollapseAll: true,
+    });
 
+    reportsProvider.refresh();
     idViewProvider.refresh();
 
     decorator.context = context;
@@ -111,6 +118,11 @@ export function activate(context: vscode.ExtensionContext) {
                 editor.selection = new vscode.Selection(lineRange.start, lineRange.end);
                 editor.revealRange(lineRange, vscode.TextEditorRevealType.Default);
             }
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('kodi-skin-tools.runReport', () => {
+            reportsProvider.run();
         })
     );
 
