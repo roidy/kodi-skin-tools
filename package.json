@@ -2,7 +2,7 @@
   "name": "kodi-skin-tools",
   "displayName": "Kodi Skin Tools",
   "description": "A set of tools and helpers for the development of Kodi skins.",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "publisher": "roidy",
   "engines": {
     "vscode": "^1.98.0"
@@ -65,7 +65,8 @@
           "command": "kodi-skin-tools.runReport",
           "when": "view == reportsView",
           "group": "navigation"
-        },        {
+        },
+        {
           "command": "kodi-skin-tools.clearReport",
           "when": "view == reportsView",
           "group": "navigation"
