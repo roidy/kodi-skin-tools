@@ -125,6 +125,11 @@ export function activate(context: vscode.ExtensionContext) {
             reportsProvider.run();
         })
     );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('kodi-skin-tools.clearReport', () => {
+            reportsProvider.clear();
+        })
+    );
 
     /**
      * Register all events.

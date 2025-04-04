@@ -51,6 +51,18 @@ Edit colors directly in the editor window.
 
 ![Color](resources/readme/color.gif)
 
+# Editor views
+## Control ID view
+Show all the used control id's for the open xml document, and for known skin files look up which controls this xml should implement.
+
+![IDView](resources/readme/idview.jpg)
+
+## Skin reports
+Scan the skin and find any unused media files.
+
+![Report](resources/readme/report.jpg)
+
+
 # Requirements
 
 Skin reloading requires [script.vscode.reload](https://github.com/roidy/script.vscode.reload/releases/download/v0.1.0/script.vscode.reload.zip) for Kodi to be installed.
@@ -66,3 +78,5 @@ Skin reloading requires [script.vscode.reload](https://github.com/roidy/script.v
 | kodi-skin-tools.decoratorColor | AARRGGBB | Color of decorated localization text in the hex AARRGGBB format |
 | kodi-skin-tools.operation | ID or $LOCALIZE[ID] | Initial localization will generate ID or $LOCALIZE[ID] |
 | kodi-skin-tools.reloadExtensions | .xml, .po | Comma seperated list of file extension that will be reloaded |
+| kodi-skin-tools.mediaExcludeGlob | glob | A glob pattern of directories to exclude from media scans |
+| kodi-skin-tools.mediaExcludeKeywords| string | Comma separated list of words. If a media file name contains the keyword it will not be scanned. |

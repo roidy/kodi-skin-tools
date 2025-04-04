@@ -52,12 +52,21 @@
         "command": "kodi-skin-tools.runReport",
         "title": "Run",
         "icon": "$(run)"
+      },
+      {
+        "command": "kodi-skin-tools.clearReport",
+        "title": "Clear",
+        "icon": "$(close)"
       }
     ],
     "menus": {
       "view/title": [
         {
           "command": "kodi-skin-tools.runReport",
+          "when": "view == reportsView",
+          "group": "navigation"
+        },        {
+          "command": "kodi-skin-tools.clearReport",
           "when": "view == reportsView",
           "group": "navigation"
         }

@@ -39,9 +39,16 @@ export class ReportsDataProvider implements vscode.TreeDataProvider<vscode.TreeI
         });
     }
 
+    clear(): void {
+        this.media.length = 0;
+        this.parentChildMap.length = 0;
+        this.refresh();
+    }
+
     refresh(): void {
         if (this.parentChildMap.length === 0) {
             this.parentChildMap.push(new TreeNode("No data. Please run a scan."));
+            this._onDidChangeTreeData.fire(null);
             return;
         }
 
