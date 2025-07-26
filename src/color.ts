@@ -8,7 +8,6 @@ import * as vscode from 'vscode';
 import { readFileSync, writeFileSync } from "fs";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import path from 'path';
-import { logger } from './logging';
 
 export class ColorProvider implements vscode.DocumentColorProvider {
 
@@ -40,6 +39,7 @@ export class ColorProvider implements vscode.DocumentColorProvider {
                 const folder = vscode.workspace.getWorkspaceFolder(editor!.document.uri);
                 const colorFile = folder!.uri.fsPath + `${path.sep}colors${path.sep}defaults.xml`;
                 const xml = readFileSync(colorFile, 'utf-8');
+                
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xml, "application/xml");
 
