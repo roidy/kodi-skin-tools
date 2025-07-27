@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import { TreeNode } from './idview';
 import { config } from './configuration';
 import { DOMParser } from "@xmldom/xmldom";
+import { findWordInFiles } from './utils';
 
 export class ReportsDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null> = new vscode.EventEmitter<vscode.TreeItem | undefined | null>();
@@ -15,11 +16,6 @@ export class ReportsDataProvider implements vscode.TreeDataProvider<vscode.TreeI
 
     private parentChildMap: TreeNode[] = [];
     public treeView: vscode.TreeView<vscode.TreeItem> | undefined = undefined;
-
-    private media: string[] = [];
-    private expressionNames: string[] = [];
-    private declairedExpressions: Set<string> = new Set();
-    private undeclairedExpressions: Set<string> = new Set();
 
     constructor() {
     }
@@ -37,54 +33,28 @@ export class ReportsDataProvider implements vscode.TreeDataProvider<vscode.TreeI
         return Promise.resolve(element.children);
     }
 
-    run(): void {
-        this.scanMedia().then(() => {
-            this.checkExpressions().then(() => {
-                this.refresh();
-            });
-        });
-    }
-
-    clear(): void {
-        this.media.length = 0;
-        this.expressionNames.length = 0;
-        this.declairedExpressions.clear();
-        this.undeclairedExpressions.clear();
+    async run(): Promise<void> {
+        // Clear previous report
         this.parentChildMap.length = 0;
-        this.refresh();
-    }
+        this._onDidChangeTreeData.fire(null);
 
-    refresh(): void {
+        // Generate reports
+        const scanResult = await this.scanMedia();
+        if (scanResult) {
+            this.parentChildMap.push(scanResult);
+        }
+        this.parentChildMap = this.parentChildMap.concat((await this.runCheck('expression', /\$EXP\[(.*?)\]/g)));
+        this.parentChildMap = this.parentChildMap.concat((await this.runCheck('variable', /\$VAR\[(.*?)[\],]/g)));
+
         if (this.parentChildMap.length === 0) {
-            this.parentChildMap.push(new TreeNode("No data. Please run a scan."));
-            this._onDidChangeTreeData.fire(null);
-            return;
+            this.parentChildMap.push(new TreeNode('No issues found.'));
         }
 
-        this.parentChildMap = [];
-        let mediaSubNodes: TreeNode[] | undefined = [];
-        let declairedExpressionsSubNodes: TreeNode[] | undefined = [];
-        let undeclairedExpressionsSubNodes: TreeNode[] | undefined = [];
-
-        this.media.forEach((s) => {
-            mediaSubNodes.push(new TreeNode(s));
-        });
-        this.declairedExpressions.forEach((s) => {
-            declairedExpressionsSubNodes.push(new TreeNode(s));
-        });
-        this.undeclairedExpressions.forEach((s) => {
-            undeclairedExpressionsSubNodes.push(new TreeNode(s));
-        });
-
-        this.parentChildMap = [new TreeNode('Unused media', undefined, vscode.TreeItemCollapsibleState.Collapsed, mediaSubNodes),
-        new TreeNode('Unused expressions', undefined, vscode.TreeItemCollapsibleState.Collapsed, declairedExpressionsSubNodes),
-        new TreeNode('Undeclaired expressions', undefined, vscode.TreeItemCollapsibleState.Collapsed, undeclairedExpressionsSubNodes)
-        ];
-
+        // Update tree view
         this._onDidChangeTreeData.fire(null);
     }
 
-    async scanMedia(): Promise<void> {
+    async scanMedia(): Promise<TreeNode | null> {
         // Find all media
         let files = await vscode.workspace.findFiles(`media/**/*`, config.mediaExcludeGlob);
         let list: string[] = [];
@@ -104,46 +74,97 @@ export class ReportsDataProvider implements vscode.TreeDataProvider<vscode.TreeI
                 break;
             }
         }
+
+        let subNodes: TreeNode[] | undefined = [];
         // Sort media list a-z
-        this.media = list.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-        return;
+        list.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).forEach((s) => {
+            subNodes.push(new TreeNode(s, undefined, vscode.TreeItemCollapsibleState.None, []));
+        });
+
+        if (subNodes.length === 0) {
+            return null;
+        }
+        else {
+            return new TreeNode('Unused media', undefined, vscode.TreeItemCollapsibleState.Collapsed, subNodes);
+        }
     }
 
-    async checkExpressions(): Promise<void> {
-        // Get all expression names
+    async runCheck(element: string, regex: RegExp): Promise<TreeNode[]> {
         let files = await vscode.workspace.findFiles(`**/*.xml`);
+        let names: Set<string> = new Set();
+        let unused: Set<string> = new Set();
         for (const file of files) {
             const document = await vscode.workspace.openTextDocument(file);
             const text = document.getText();
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(text, "application/xml");
 
-            const elements = xmlDoc.getElementsByTagName('expression');
+            const elements = xmlDoc.getElementsByTagName(element);
             for (const element of elements) {
                 const name = element.getAttribute('name');
                 if (name) {
-                    this.expressionNames.push(name);
+                    names.add(name);
+                    unused.add(name);
                 }
             }
         }
 
-        // Scan files for $EXP[xx]
         files = await vscode.workspace.findFiles(`**/*.xml`);
+        let undeclared: Set<string> = new Set();
         for (const file of files) {
             const document = await vscode.workspace.openTextDocument(file);
             const text = document.getText();
-            const regex = /\$EXP\[(.*?)\]/g;
             let match;
             while ((match = regex.exec(text)) !== null) {
-                const expressionName = match[1];
-                if (this.expressionNames.includes(expressionName)) {
-                    this.declairedExpressions.add(expressionName);
+                const name = match[1];
+                if (names.has(name)) {
+                    unused.delete(name);
                 }
                 else {
-                    this.undeclairedExpressions.add(expressionName);
+                    if (!name.includes('$PARAM') && !name.includes('$INFO')) {
+                        undeclared.add(name);
+                    }
                 }
             }
         }
-        return;
+
+        let subNodes: TreeNode[] | undefined = [];
+        let unusedNames: TreeNode[] | undefined = [];
+        let returnedTreeNodes: TreeNode[] = [];
+
+        let param: string;
+        // Sort undeclared a-z
+        Array.from(undeclared.values()).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).forEach((s) => {
+            if (element === 'expression') {
+                param = `\$EXP\[${s}\]`;
+            }
+            else {
+                param = `\$VAR\[${s}\]`;
+            }
+            const command = { command: 'extension.runReferenceLookup', title: '', arguments: [{ search: param }] };
+            subNodes.push(new TreeNode(s, command, vscode.TreeItemCollapsibleState.None, []));
+        });
+        // Sort names a-z
+        Array.from(unused.values()).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).forEach((s) => {
+            if (element === 'expression') {
+                param = `<expression name="${s}">`;
+            }
+            else {
+                param = `<variable name="${s}">`;
+            }
+            const command = { command: 'extension.runReferenceLookup', title: '', arguments: [{ search: param }] };
+            unusedNames.push(new TreeNode(s, command, vscode.TreeItemCollapsibleState.None, []));
+        });
+
+
+        if (unusedNames.length !== 0) {
+            returnedTreeNodes.push(new TreeNode(`Unused ${element}'s`, undefined, vscode.TreeItemCollapsibleState.Collapsed, unusedNames));
+        }
+
+        if (subNodes.length !== 0) {
+            returnedTreeNodes.push(new TreeNode(`Undeclared ${element}'s`, undefined, vscode.TreeItemCollapsibleState.Collapsed, subNodes));
+        }
+
+        return returnedTreeNodes;
     }
 }

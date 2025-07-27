@@ -51,6 +51,7 @@ export function getWord(toLower: boolean = false): any[] {
 export async function findWordInFiles(targetMatch: string, findFirstMatch = false, ext = "{*.xml,*.po}", excludeDir = 'backup'): Promise<vscode.Location[]> {
     const files = await vscode.workspace.findFiles(`**/${ext}`, `**/${excludeDir}/**`);
     const locations: vscode.Location[] = [];
+    targetMatch = targetMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(targetMatch, 'ig');
 
     for (const file of files) {

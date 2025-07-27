@@ -2,7 +2,7 @@
   "name": "kodi-skin-tools",
   "displayName": "Kodi Skin Tools",
   "description": "A set of tools and helpers for the development of Kodi skins.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publisher": "roidy",
   "engines": {
     "vscode": "^1.98.0"
@@ -45,29 +45,15 @@
         "title": "Kodi: Generate translation file"
       },
       {
-        "command": "kodi-skin-tools.showProgress",
-        "title": "Kodi: Show Progress"
-      },
-      {
         "command": "kodi-skin-tools.runReport",
         "title": "Run",
         "icon": "$(run)"
-      },
-      {
-        "command": "kodi-skin-tools.clearReport",
-        "title": "Clear",
-        "icon": "$(close)"
       }
     ],
     "menus": {
       "view/title": [
         {
           "command": "kodi-skin-tools.runReport",
-          "when": "view == reportsView",
-          "group": "navigation"
-        },
-        {
-          "command": "kodi-skin-tools.clearReport",
           "when": "view == reportsView",
           "group": "navigation"
         }
@@ -80,10 +66,6 @@
         },
         {
           "command": "kodi-skin-tools.NewTranslation",
-          "group": "1_kodi-skin-tools"
-        },
-        {
-          "command": "kodi-skin-tools.showProgress",
           "group": "1_kodi-skin-tools"
         }
       ]

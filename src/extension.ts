@@ -10,7 +10,7 @@ import { config } from './configuration';
 import { localize } from './localize';
 import { decorator } from './decorator';
 import { po } from './po-file';
-import { reloadKodiSkin } from './utils';
+import { findWordInFiles, reloadKodiSkin } from './utils';
 import { DefinitionProvider } from './definition';
 import { ReferenceProvider } from './reference';
 import { ColorProvider } from './color';
@@ -41,7 +41,6 @@ export function activate(context: vscode.ExtensionContext) {
         showCollapseAll: true,
     });
 
-    reportsProvider.refresh();
     idViewProvider.refresh();
 
     decorator.context = context;
@@ -52,39 +51,6 @@ export function activate(context: vscode.ExtensionContext) {
     /**
      * Register all commands.
      */
-    context.subscriptions.push(
-        vscode.commands.registerCommand('kodi-skin-tools.showProgress', async () => {
-            await vscode.window.withProgress(
-                {
-                    location: vscode.ProgressLocation.Notification, // Options: Notification, Window, or Editor
-                    title: 'Processing Files',
-                    cancellable: true, // Allows the user to cancel the operation
-                },
-                async (progress, token) => {
-                    token.onCancellationRequested(() => {
-                        console.log('User canceled the operation.');
-                    });
-
-                    const totalSteps = 10;
-                    for (let i = 0; i < totalSteps; i++) {
-                        if (token.isCancellationRequested) {
-                            break;
-                        }
-
-                        // Simulate a long-running task
-                        await new Promise((resolve) => setTimeout(resolve, 500));
-
-                        // Update progress
-                        progress.report({
-                            increment: 100 / totalSteps,
-                            message: `Step ${i + 1} of ${totalSteps}`,
-                        });
-                    }
-                }
-            );
-        })
-    );
-
     context.subscriptions.push(
         vscode.commands.registerCommand('kodi-skin-tools.Localize', () => {
             localize.run();
@@ -121,13 +87,29 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand('kodi-skin-tools.runReport', () => {
-            reportsProvider.run();
+        vscode.commands.registerCommand('extension.runReferenceLookup', async (args: { search: string }) => {
+            if (args.search) {
+                logger.log(args.search);
+                const locations = await findWordInFiles(args.search);
+
+                if (locations && locations.length > 0) {
+                    // Get the first location to use as the source reference
+                    const firstLocation = locations[0];
+
+                    // Show references in the panel
+                    await vscode.commands.executeCommand(
+                        'editor.action.showReferences',
+                        firstLocation.uri,
+                        firstLocation.range.start,
+                        locations
+                    );
+                }
+            }
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand('kodi-skin-tools.clearReport', () => {
-            reportsProvider.clear();
+        vscode.commands.registerCommand('kodi-skin-tools.runReport', () => {
+            reportsProvider.run();
         })
     );
 
