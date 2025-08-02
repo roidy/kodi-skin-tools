@@ -58,7 +58,7 @@ Show all the used control id's for the open xml document, and for known skin fil
 ![IDView](resources/readme/idview.jpg)
 
 ## Skin reports
-Scan the skin and find any unused media files, expressions and variables.
+Scan the skin and find any unused media files, fonts, expressions and variables.
 
 ![Report](resources/readme/report.jpg)
 

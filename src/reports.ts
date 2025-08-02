@@ -43,6 +43,7 @@ export class ReportsDataProvider implements vscode.TreeDataProvider<vscode.TreeI
         if (scanResult) {
             this.parentChildMap.push(scanResult);
         }
+        this.parentChildMap = this.parentChildMap.concat((await this.scanFonts()));
         this.parentChildMap = this.parentChildMap.concat((await this.runCheck('expression', /\$EXP\[(.*?)\]/g)));
         this.parentChildMap = this.parentChildMap.concat((await this.runCheck('variable', /\$VAR\[(.*?)[\],]/g)));
 
@@ -87,6 +88,74 @@ export class ReportsDataProvider implements vscode.TreeDataProvider<vscode.TreeI
         else {
             return new TreeNode('Unused media', undefined, vscode.TreeItemCollapsibleState.Collapsed, subNodes);
         }
+    }
+
+    async scanFonts(): Promise<TreeNode[]> {
+        let files = await vscode.workspace.findFiles(`**/*.xml`);
+        let names: Set<string> = new Set();
+        let unused: Set<string> = new Set();
+        for (const file of files) {
+            const document = await vscode.workspace.openTextDocument(file);
+            const text = document.getText();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(text, "application/xml");
+
+            const elements = xmlDoc.getElementsByTagName('font');
+            for (const element of elements) {
+                const name = element.getElementsByTagName('name')[0];
+                if (name && name.textContent) {
+                    names.add(name.textContent);
+                    unused.add(name.textContent);
+                }
+            }
+        }
+
+        files = await vscode.workspace.findFiles(`**/*.xml`);
+        let undeclared: Set<string> = new Set();
+        for (const file of files) {
+            const document = await vscode.workspace.openTextDocument(file);
+            const text = document.getText();
+            const regex = /font>(.*?)</g;
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+                const name = match[1];
+                if (names.has(name)) {
+                    unused.delete(name);
+                }
+                else {
+                    undeclared.add(name);
+                }
+            }
+        }
+
+        let subNodes: TreeNode[] | undefined = [];
+        let unusedNames: TreeNode[] | undefined = [];
+        let returnedTreeNodes: TreeNode[] = [];
+
+        let param: string;
+        // Sort undeclared a-z
+        Array.from(undeclared.values()).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).forEach((s) => {
+            param = `\<font>${s}<\/font>`;
+            const command = { command: 'extension.runReferenceLookup', title: '', arguments: [{ search: param }] };
+            subNodes.push(new TreeNode(s, command, vscode.TreeItemCollapsibleState.None, []));
+        });
+        // Sort names a-z
+        Array.from(unused.values()).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).forEach((s) => {
+            param = `<name>${s}<\/name>`;
+            const command = { command: 'extension.runReferenceLookup', title: '', arguments: [{ search: param }] };
+            unusedNames.push(new TreeNode(s, command, vscode.TreeItemCollapsibleState.None, []));
+        });
+
+
+        if (unusedNames.length !== 0) {
+            returnedTreeNodes.push(new TreeNode(`Unused font's`, undefined, vscode.TreeItemCollapsibleState.Collapsed, unusedNames));
+        }
+
+        if (subNodes.length !== 0) {
+            returnedTreeNodes.push(new TreeNode(`Undeclared font's`, undefined, vscode.TreeItemCollapsibleState.Collapsed, subNodes));
+        }
+
+        return returnedTreeNodes;
     }
 
     async runCheck(element: string, regex: RegExp): Promise<TreeNode[]> {
