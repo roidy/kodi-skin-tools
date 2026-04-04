@@ -66,7 +66,8 @@ export class ColorProvider implements vscode.DocumentColorProvider {
 
     provideDocumentColors(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.ProviderResult<vscode.ColorInformation[]> {
         const text = document.getText();
-        const colorPattern = /[0-9a-fA-F]{8}/g;
+        const colorPattern = /(?<=")[0-9a-fA-F]{8}(?=")|(?<=>)[0-9a-fA-F]{8}(?=<)/g;
+
         const nMatch = new RegExp([
             "<textcolor>(.*?)<\/textcolor>",
             "<selectedcolor>(.*?)<\/selectedcolor>",
