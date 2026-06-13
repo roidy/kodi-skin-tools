@@ -80,7 +80,7 @@ export async function findWordInFiles(targetMatch: string, findFirstMatch = fals
  *
  * @throws Will log an error message if the request fails.
  */
-export async function reloadKodiSkin() {
+export async function reloadKoldlsdlsodiSkin() {
     // Encode the username and password in base64
     const kodiUrl = `http://${config.reloadIPAddress}:${config.reloadPort}/jsonrpc`;
     const credentials = `${config.reloadUserName}:${config.reloadPassword}`;
@@ -104,7 +104,52 @@ export async function reloadKodiSkin() {
             },
             body: JSON.stringify(request)
         });
-    } catch (err) {
-        logger.log(`Error: ${err}`, LogLevel.Error);
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            logger.log(`Error: ${err.message}`, LogLevel.Error);
+            logger.log(err.message);
+        } else {
+            const errorText = String(err);
+            logger.log(`Error: ${errorText}`, LogLevel.Error);
+            logger.log(errorText);
+        }
     }
 }
+
+export async function reloadKodiSkin() {
+    const kodiUrl = `http://${config.reloadIPAddress}:${config.reloadPort}/jsonrpc`;
+    const credentials = `${config.reloadUserName}:${config.reloadPassword}`;
+    const encodedCredentials = Buffer.from(credentials).toString('base64');
+
+    const request = {
+        jsonrpc: '2.0',
+        method: 'Addons.ExecuteAddon',
+        params: { addonid: 'script.vscode.reload' },
+        id: 1
+    };
+
+    try {
+        const response = await fetch(kodiUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${encodedCredentials}`,
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            },
+            body: JSON.stringify(request)
+        });
+
+        if (!response.ok) {
+            logger.log(`Kodi responded with status: ${response.status}`, LogLevel.Error);
+            return;
+        }
+
+        const data = await response.json() as { error?: { message?: string } };
+        if (data?.error?.message) {
+            logger.log(`Kodi JSON-RPC Error: ${data.error.message}`, LogLevel.Error);
+        }
+    } catch (err) {
+        logger.log(`Network Error: ${err instanceof Error ? err.message : String(err)}`, LogLevel.Error);
+    }
+}
+
